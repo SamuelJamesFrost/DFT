@@ -37,12 +37,61 @@
 	Many diverse solutions were developed, and are still being developed today, to overcome this problem. They include methods which are fit to empirical data, like Grimme's DFT-D2 and DFT-D3, which are generally faster. And pure methods, such as VV10 and vdw-DFT, which are much more costly.
 
 
-	\section{Empirically Based Methods}
+	\section{Semi-emperical Methods}
 	\subsection{DFT-D2}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
-	the successor to his more limited DFT-D method.
-	The basis of DFT-D2 is in pairwise attraction between atoms, however, it doesn't take into account its chemical environment, see: DFT-D3. Despite being less accurate than D3, D2 is still widely used due to its relatively high accuracy and low cost.
+	the successor to his more limited DFT-D method. The main setback of this original method was the narrow scope of the atoms it could model, only Hydrogen and Carbon through to Neon. This, paired with very large inconsistencies for thermochemical calculations (e.g. energy of atomisation) made it a very limited method in dire need of improvement for it to become widespread.
 
+	The basis of the DFT-D2 dispersion correction is in the pairwise attraction between distinct atoms $i$ and atoms $j$ for all $N$ atoms in the system. \cite{Grimme2006}
+	\begin{align} \label{eq:D2}
+	E_{\rm disp} \defeq -s_6 \sum^{N-1}_{i=1} \sum^N_{j=i+1} \frac{C^{i,j}_{6}}{R^6_{i,j}} f_{\rm damp}(R_{i,j})
+	\end{align} 
+	\noindent
+	Where $C_6^{i,j}$ is the dispersion coefficient for the pair of atoms $i$ and $j$, $s_6$ is the scaling factor depending on the functional used, and $R_{i,j}$ is the interatomic separation. 
+	$C_6^{i,j}$ is calculated by the taking the geometric mean of the single atoms 
+	\begin{align} \label{eq:C6ij}
+		C_6^{i,j} = \sqrt{C_6^i C_6^j}
+	\end{align}
+	These atomic $C_6$ values are themselves computed through the PBE0 functional\cite{Grimme2011}. They are the same irrespective of the chemical environment, $C_6$ for carbon in methane is the same as in benzene, when obviously the dispersion interactions differ, this glaring hole is fixed in DFT-D3, where the chemical environment is considered.
+	\begin{align} \label{eq:C6i}
+		C_6^i = 0.05NI_i \alpha_i
+	\end{align}
+	$N$ is a scaling factor which depends on the row of the periodic table, taking on the value of the atomic mass of the element at the end of the row (e.g. for row 4 $N = 36$). $I$ is the first ionisation potential and $\alpha$ the static dipole polarisability, both of which are found with the PBE$0$ functional. These atomic dispersion coefficients are only available up to Xenon, a large improvement on DFT-D.
+
+	$f_{\rm damp}(R_{i,j})$ is a Fermi damping function which ensures that the dispersion correction goes to zero as $R_{i,j}$ decreases, stopping any singularities from forming and dwarfing shorter range forces. 
+	\begin{align} \label{eq:damp}
+		f_{\rm damp}(R_{i,j}) \defeq \frac{1}{1+\exp(-d(R_{i,j}/R_r -1))}
+	\end{align}
+	Here, $R_r$ is the sum of the atomic van der Waals radii of the two atoms, which is derived from Restricted Open-shell Hartree-Fock calculations, in DFT-D2 $d = 20$, a small value compared to DFT-D, giving stronger corrections at intermediate distances. 
+
+	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
+
+	\emph{Maybe talk about empiricism more}
+
+	\subsection{DFT-D3}
+
+	As mentioned earlier, DFT-D2 does not consider the chemical environment of the atom. Covalent bonds change the electronic structure, half occupied atomic orbitals become lower energy molecular orbitals. This lowers the polarisability of the atom, meaning a smaller $C_6$ constant is needed. DFT-D3 considers the coordination number of the atom, giving a more accurate result. \cite{Grimme2010} D3 also uses higher order correction terms (which correspond to a higher order distance factor too), however these generally stop at $C_8$, as any higher has shown to give unstable results for larger molecules.
+
+	The coordination number for an atom $A$ in a molecule with $N$ atoms is given by 
+	{\small
+	\begin{align}
+		{\rm CN}^A = \sum_{B \neq A}^N \frac{1}{1 + e^{-16(4(R_A,{\rm cov} + R_A,{\rm cov})/(3R_{AB}) - 1)}}
+	\end{align}}
+	where $R_A,{\rm cov}$ is the covalent radius and $R_{AB}$ the distance between the two atoms.
+
+	For the dispersion coefficient of a specific system the electric dipole polarisability $\alpha^A (i\omega)$ is calculated for the free atom as well as differently coordinated hydrides, $A_mH_n$ and $B_kH_l$ using the PBE38 hybrid functional.\cite{Grimme2011} An altered Casimir-Polder expression is used to find the new dispersion coefficient. 
+
+	\begin{align}
+		C_6^{AB} ({\rm CN}^A , {\rm CN}^B) =  \nonumber \\ \frac{3}{\pi} \int^{\infty}_0 \frac{1}{m} \left(\alpha^{A_m H_n}(i\omega) - \frac{n}{2} \alpha^{H_2} (i\omega) \right) \nonumber \\ \cross \frac{1}{k} \left(\alpha^{B_k H_l}(i\omega) - \frac{l}{2} \alpha^{H_2} (i\omega)\right) d\omega 
+	\end{align}
+	Here the $A_mH_n$ reference compound corresponds to the required coordination number of the atom $A$, the contribution of the hydrogen atoms to the polarisability is then subtracted from this. 
+	
+	These $C_6$ values are precomputed for every possible coordination number and atom pair. In the actual calculation the dispersion coefficient is evaluated as the Gaussian average of the previous values. This means that only the geometry of a molecule is required to calculate its dispersion coefficent. From here we can calculate the higher order $C_8$ dispersion coefficent.
+	\begin{align}
+		C_8^{AB} &= 3C_6^{AB} \sqrt{Q_A Q_B}\\
+		Q_A  &= \sqrt{Z_A} \frac{\langle r_A^4 \rangle}{\langle r_A^2 \rangle}
+	\end{align}
+	Where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$ is the highest order dispersion coefficient calculated however, $C_{10}$ is ignored and instead absorbed into the $s_8$ scaling factor.
 
 	\section{Pure Methods}
 	VV10, vdW-DFT

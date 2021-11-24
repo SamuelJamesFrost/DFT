@@ -30,7 +30,6 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{accents}
-\usepackage{mathtools}
 \usepackage[scaled=1.15]{urwchancal}
 \usepackage{bbding}
 \usepackage{xfrac}
@@ -203,11 +202,11 @@
 {<-> s * [1.15] pzcmi7t}{}
 \DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 
-\mathtoolsset{showonlyrefs}
-\newtagform{noparen}{---\ (}{)}
+%\mathtoolsset{showonlyrefs}
+\newtagform{noparen}{(}{)}
 \usetagform{noparen}
 \renewcommand{\eqref}[1]{(\refeq{#1})}
-\renewcommand{\theequation}{\arabic{section}.\Roman{equation}}
+\renewcommand{\theequation}{\arabic{section}.\arabic{equation}}
 
 % Inner product
 \DeclarePairedDelimiterX{\inp}[2]{\langle}{\rangle}{#1, #2}
