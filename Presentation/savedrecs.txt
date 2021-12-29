@@ -1,0 +1,30 @@
+﻿FN Clarivate Analytics Web of Science
+VR 1.0
+PT J
+AU Orio, M
+   Pantazis, DA
+   Neese, F
+AF Orio, Maylis
+   Pantazis, Dimitrios A.
+   Neese, Frank
+TI Density functional theory
+SO PHOTOSYNTHESIS RESEARCH
+RI Pantazis, Dimitrios A./A-2434-2010; Vandenberghe, William/L-2998-2017;
+   Orio, Maylis/J-6355-2015; Neese, Frank/J-4959-2014
+OI Pantazis, Dimitrios A./0000-0002-2146-9065; Orio,
+   Maylis/0000-0002-9317-8005; Neese, Frank/0000-0003-4691-0547
+SN 0166-8595
+EI 1573-5079
+PD DEC
+PY 2009
+VL 102
+IS 2-3
+SI SI
+BP 443
+EP 453
+DI 10.1007/s11120-009-9404-8
+UT WOS:000271795400030
+PM 19238578
+ER
+
+EF
