@@ -9,6 +9,7 @@
 \addbibresource{references.bib}
 \usepackage[font=small]{caption}
 \usepackage{lipsum}
+\usepackage{xcolor}
 
 \newcommand{\al}{\emph{et al. }}
 
@@ -34,12 +35,10 @@
 
 	
 	\section{Introduction}
-	Covalent and ionic bonds are normally considered the most important interactions in terms of making a molecule, but the lesser known dispersion interaction (often known as Van der Waals interactions, or London Dispersion forces) plays just as an important role, if not more so in some highly important molecules like DNA.
-
-	But what are dispersion interactions? Fluctuations of electron density, both inside of molecules and between separate ones, cause atoms to have a lopsided charge (positive on one end, negative on the other), making them polar. This can have a knock on effect, causing other atoms to become polar. This is always a long range attractive force, and so balances out always repulsive forces, such as the strong force.
-
-	Primitive DFT methods neglected these interactions, causing DNA to unwind and graphene sheets to repel each other. Whilst this wasn't as much a problem in basic solid state physics, where unit cells are only made up of purely covalent or ionic bonds, it affects all areas of science where complicated molecules are involved. 
-	Many diverse solutions were developed, and are still being developed, to overcome this problem. They include methods which are fit to empirical data, like Grimme's DFT-D2 and DFT-D3, which are generally faster. And pure methods, such as VV10 and vdw-DFT, which are (slightly) more costly.
+	The electronic structure of a molecule, or system of molecules, is an important property of much interest to scientists of all fields. As such many methods have been devised to calculate these structures to help aid scientists in their research of complicated systems, where direct measurement of certain properties may not be practical or even possible. \color{red} One of these is methods is DFT, which uses electron density to calculate the electronic structure.\color{black} 
+	It may seem that the most important part of a system of molecules is the intramolecular covalent and ionic bonds. Whilst they do play a large role in determining the structure of the molecule these do not paint the full picture. Fluctuations of electron density cause pockets of slight negative and positive charge, this has a knock on effect to neighbouring electrons which causes both inter and intramolecular attraction, along with further fluctuations in electron density. This phenomenom is known as van der Waals (also London dispersion) forces; despite being incredibly weak (many orders of magnitude weaker than covalent bonds), it plays an important role in chemistry. 
+	DFT methods have previously failed in considering these crucial van der Waals forces at long ranges, making them appear much weaker than in reality. Whilst this may not be a problem for basic solid state physics, where almost purely ionic crystals are consered, it is a major problem in other areas of science. A lack of proper London dispersion forces causes a multitude of problems: DNA, which is held together with hydrogen bonds, will lack the strength to keep its form and as such will unwind; polar molecules, such as those commonly found in biology and organic chemistry, will have their thermodynamic properties miscalculated; molecules adsorping to metal surfaces will adsorp to the wrong site, and give weaker energies than in actuality. 
+	With this in mind it is obvious that DFT is in dire need of a solution, but before one can find a solution one needs to actually find the problem. 
 
 	The total electronic ground state energy of an atom, molecule, or ion, can be written as follows
 	\begin{align}
@@ -49,16 +48,16 @@
 	It does not take into account the instantaneous influence of electrons on one another when they are in close proximity. Electrons will always try to repel each other, they will avoid each other, therefore the movements of one electron depends on the others, they are \emph{correlated}, this lowers the energy of the system as it reduces the repulsion between electrons. $E_J$ does not take this into account as it is only modelled as the electrons moving in the average potential field of all the other electrons, and therefore does not include induvidual correlation effects. 
 	To fix this the negative $E_X$ and $E_C$ correction terms are introduced, and are often lumped together into a single term dubbed the exchange correlation energy $E_{XC}$. 
 	$E_X$, the exchange energy, accounts for the much stronger correlated moton of electron sharing the same spin, caused by the Pauli exclusion principle, and removes the non-physical self repulsion terms included in $E_J$. $E_C$, the correlation energy, is much smaller and accounts for the weaker correlated motion of electrons with opposite spin. 
-	The calculation of the exchange correlation energy is a formidable task however....
-	It is the exchange correlation energy which represents van der Waals interactions in the system, and so is the goal of the dispersion corrections mentioned in this paper.
 
+	It is the exchange correlation energy which represents van der Waals interactions between atoms and molecules, so its accurate calculation is vital to many systems.
+	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approxmiation) and GGA (generalised gradient approximation) (such as PBE). 
+	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{Find a reference}
 
+	For the popular LDA and GGA methods, $E_{XC}$ is modelled to be a functional of the \emph{local} electron density or a functional of the \emph{gradient} of the local electron density respectively. Therefore only local (i.e. short range) contributions to the exchange correlation energy are considered. An important consequence of this is the lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
+
+	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of disperion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
 	
-
-
 	\section{Semi-emperical Corrections}
-	\subsection{Semi-local Density Functional Theory}
-	
 	\subsection{DFT-D2}
 	\subsubsection{Theory}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
@@ -107,15 +106,17 @@
 	Here, $R_r$ is the sum of the atomic van der Waals radii of the two atoms, which is derived from Restricted Open-shell Hartree-Fock calculations, in DFT-D2 $d = 20$, a small value compared to DFT-D, giving stronger corrections at intermediate distances. 
 
 	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
-	These values are fit to emperical data however (hence the section name), leading critics to argue that this method is essentially just changing parameters until the data aligns with the accepted values.
+
+	These constants are through least-squares fit optimisation against the energy deviations of a large set of training systems, which leads some to believe it to be unacceptable from a theoretical standpoint.\cite{Sato2009}\cite{Grimme2010} For methods with little empiricism, see section 3.
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
+	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
 
 	\emph{Maybe talk about empiricism more}
 	\subsubsection{Application}
 
 	One area where DFT-D2 fails is under extreme conditions, Ilawe \emph{et al.} found that DFT-D2 beings to break down for Palladium Hydrides under large amounts of stress, giving errors close to 40\% when compared with experimental data.\cite{Ilawe2015} This, coupled with its general poor performance when heavy metals surfaces are involved make for some very poor results.\emph{REFERENCE THIS}
-	Researching how different computational methods model the adsorption of noble gasses to heavy metals, Chen found that DFT-D2 vastly overestimates the energy of adsorption by a factor of two, leading to the conclusion that "the DFT-D2 method, at least with recommended parameterisation, is not suitable for investigating noble gas adsorption on metals".\cite{Chen2012} 
+	Researching how different computational methods model the adsorption of noble gasses to heavy metals, Chen \emph{et al.} found that DFT-D2 vastly overestimates the energy of adsorption by a factor of two, leading to the conclusion that "the DFT-D2 method, at least with recommended parameterisation, is not suitable for investigating noble gas adsorption on metals".\cite{Chen2012} 
 	In a limited study involving a Ag (1 1 1) surface and aromatic molecules, Schiavo \al attempted to reparamataise DFT-D2 to better suit adsorption to metal surfaces. Fitting $R_r$ against MP2 data, causing an increase in $R_r$, was found to limit overbinding whilst still semi-accurately describing the geometry.\cite{Schiavo2018} This method could be applied to other metal surfaces and adsorbants in the future. 
 
 	Kim \emph{et al.} compared the results of the equilibrium spacing for sheets of black phosphorus with and without multiple dispersion corrections applied. For PBE with no correction there was a 10\% difference compared with experimental data, however with DFT-D2 applied that dropped down to only 0.5\%, obviously a very successful result for DFT-D2.\cite{Kim2014} 
@@ -154,25 +155,17 @@
 
 
 
-	\section{Pure Methods}
+	\section{Non-Local DFT Functionals}
 	\subsection*{notes}
 	VV09 and VV10 - vydrov, vdW-DFT
 	\subsection*{actual}
-	Unlike the semi-classical methods to find the electron correlation energy, such as  DFT-D2 and DFT-D3 (see sections 2.1 and 2.2 respectively) which use forces whose properties are derived from emperical data, the non-local correlation methods discussed in this section require only the electron density. Their lack of reliance on emperical data lead many to believe these methods to be more "pure" in a mathematical sense, hence the name of the section. These types of methods find a balance between the overly rigorous (and therefore slow) random-phase approximation methods, and the less accurate semi-classical methods. 
-
-	These methods are non-local, they compare the electron density at \emph{every point in space}, compared to regular DFT, where the functional depends only on one \emph{local} position in space. 
-	The range of points which are used is very important, as to include both short-medium range forces and long range forces, both of which affect the system.
-
+	Unlike the semi-empirical \emph{corrections} introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Although the final integral is very cumbersome, it relies only on the electron density, and as such uses very little empiricism, which may be desireable from a theoretical point of view.
 
 	The non-local correlation energy (in natural units) is defined as 
 	\begin{align}
-		E = \frac{1}{2}\int \int dr dr' \rho(r) \Phi(r, r') \rho(r')
+		E = \frac{1}{2} \int dr dr' \rho(r) \Phi(r, r') \rho(r')
 	\end{align}
-	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$.
-	This finds the same energy as the semi-emperical approaches, but includes every point in space. This integral is used for every vdw-DFT based (pure) method, and so does not need repeating. 
-
-	Fluctuating electron density? Unlike DFT which keeps it constant? Dunno, this is too hard
-	Talk about density fluctuations and how that creates an attractive force
+	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. \color{red} The kernel is the heart of that which makes the functional distinct, and varies from functional to functional.\color{black}
 
 	\subsection{VV10}
 	\subsubsection*{Notes}
