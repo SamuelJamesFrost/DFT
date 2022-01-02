@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper,twocolumn,twoside]{extarticle}
 
-\title{Dispersion Corrections in Density Field Theory}
+\title{{\TH}e Olde Dispersion Corrections in Density Field Theory}
 \author{Samuel James Frost}
 \def\ID{20184093}
 \input{header.tex}
@@ -35,10 +35,11 @@
 
 	
 	\section{Introduction}
-	The electronic structure of a molecule, or system of molecules, is an important property of much interest to scientists of all fields. As such many methods have been devised to calculate these structures to help aid scientists in their research of complicated systems, where direct measurement of certain properties may not be practical or even possible. \color{red} One of these is methods is DFT, which uses electron density to calculate the electronic structure.\color{black} 
+	The electronic structure of a molecule, or system of molecules, is an important property of much interest to scientists of all fields. As such many methods have been devised to calculate these structures to help aid scientists in their research of complicated systems, where direct measurement of certain properties may not be practical or even possible. One of these is methods is DFT, which uses electron density to calculate the energy at each nuclear position. A geometry optimisation can then be run which will find the minimum energy configuration. \cite{Parr1989} This method can be used to find all sorts of useful properties, such as molecular geometries, thermodynamic properties, reaction barriers, etc.\cite{Jones2015}
+
 	It may seem that the most important part of a system of molecules is the intramolecular covalent and ionic bonds. Whilst they do play a large role in determining the structure of the molecule these do not paint the full picture. Fluctuations of electron density cause pockets of slight negative and positive charge, this has a knock on effect to neighbouring electrons which causes both inter and intramolecular attraction, along with further fluctuations in electron density. This phenomenom is known as van der Waals (also London dispersion) forces; despite being incredibly weak (many orders of magnitude weaker than covalent bonds), it plays an important role in chemistry. 
-	DFT methods have previously failed in considering these crucial van der Waals forces at long ranges, making them appear much weaker than in reality. Whilst this may not be a problem for basic solid state physics, where almost purely ionic crystals are consered, it is a major problem in other areas of science. A lack of proper London dispersion forces causes a multitude of problems: DNA, which is held together with hydrogen bonds, will lack the strength to keep its form and as such will unwind; polar molecules, such as those commonly found in biology and organic chemistry, will have their thermodynamic properties miscalculated; molecules adsorping to metal surfaces will adsorp to the wrong site, and give weaker energies than in actuality. 
-	With this in mind it is obvious that DFT is in dire need of a solution, but before one can find a solution one needs to actually find the problem. 
+	DFT methods have previously failed in considering these crucial van der Waals forces at long ranges, making them appear much weaker than in reality. Whilst this may not be a problem for basic solid state physics, where almost purely ionic crystals are concerned, it is a major problem in other areas of science. A lack of proper London dispersion forces causes a multitude of problems: DNA, which is held together with hydrogen bonds, will lack the strength to keep its form and as such will unwind; polar molecules, such as those commonly found in biology and organic chemistry, will have their thermodynamic properties miscalculated; molecules adsorping to metal surfaces will adsorp to the wrong site, and give weaker energies than in actuality; complicated molecular crystals will pack incorrectly, giving the wrong optimised geometry.
+	With this in mind, it is obvious that DFT is in dire need of a solution, but before one can find a solution one needs to actually find the problem. 
 
 	The total electronic ground state energy of an atom, molecule, or ion, can be written as follows
 	\begin{align}
@@ -51,12 +52,15 @@
 
 	It is the exchange correlation energy which represents van der Waals interactions between atoms and molecules, so its accurate calculation is vital to many systems.
 	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approxmiation) and GGA (generalised gradient approximation) (such as PBE). 
-	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{Find a reference}
-
-	For the popular LDA and GGA methods, $E_{XC}$ is modelled to be a functional of the \emph{local} electron density or a functional of the \emph{gradient} of the local electron density respectively. Therefore only local (i.e. short range) contributions to the exchange correlation energy are considered. An important consequence of this is the lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
+	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{vdWImportance-Kaplan2006} The LDA functional assumes that the exchange correlation energy depends on the local electron density at a single point in space only, which is modelled as a uniform electron gas.\cite{LDA-Kohn1965} The slightly more complex GGA method uses both the local electron density at each point, but also its \emph{gradient}, giving better results.\cite{GGA-Becke1988}\cite{GGA-Perdew1986} A consequence of this is that only local (i.e. short range) contributions to the exchange correlation energy are considered. Therefore there is a lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
 
 	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of disperion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
 	
+	%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%    MAYBE TALK ABOUT THE UNIFORM ELECTRON GAS AND HOW 
+	%%%%    WE HAVE AN EXACT EXPRESSION FOR IT -> LDA WORKS FOR IT 
+	%%%% https://mattermodeling.stackexchange.com/questions/1320/can-dft-be-exact-in-the-limit-of-the-uniform-electron-gas 
+
 	\section{Semi-emperical Corrections}
 	\subsection{DFT-D2}
 	\subsubsection{Theory}
@@ -107,7 +111,7 @@
 
 	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
 
-	These constants are through least-squares fit optimisation against the energy deviations of a large set of training systems, which leads some to believe it to be unacceptable from a theoretical standpoint.\cite{Sato2009}\cite{Grimme2010} For methods with little empiricism, see section 3.
+	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see section 3.
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
 	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
@@ -156,25 +160,29 @@
 
 
 	\section{Non-Local DFT Functionals}
-	\subsection*{notes}
-	VV09 and VV10 - vydrov, vdW-DFT
-	\subsection*{actual}
-	Unlike the semi-empirical \emph{corrections} introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Although the final integral is very cumbersome, it relies only on the electron density, and as such uses very little empiricism, which may be desireable from a theoretical point of view.
+
+	Unlike the semi-empirical \emph{corrections} introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, VV10 helps to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
+	\begin{align}
+		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{LDA} + E_\text{C}^\text{NL}
+	\end{align} 
 
 	The non-local correlation energy (in natural units) is defined as 
 	\begin{align}
-		E = \frac{1}{2} \int dr dr' \rho(r) \Phi(r, r') \rho(r')
+		E^\text{NL}_\text{C} = \frac{1}{2} \int dr dr' \rho(r) \Phi(r, r') \rho(r')
 	\end{align}
-	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. \color{red} The kernel is the heart of that which makes the functional distinct, and varies from functional to functional.\color{black}
+	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. This allows for a perturbation at a point $r$ then induces an exchange correlation at a far away point $r'$
+	\color{red} The kernel is the heart of that which makes the functional distinct, and varies from functional to functional.\color{black}
 
 	\subsection{VV10}
 	\subsubsection*{Notes}
 	Easy to implement, computationally efficient undemanding in terms of the basis set quality or
 	the fineness of the numerical integration grid. vdw-DF2 seems to underbind -- vydrov2012
 	\subsubsection{Theory}
-	VV10 is the simplest dispersion correction in the VV family. 
+	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their earlier method, VV09.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
+	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011} 
+	VV10 
 
-	The correlation kernel is introduced to be 
+	After much thought, the correlation kernel is found to be  
 	\begin{align}
 		\Phi = - \frac{3}{2gg'(g+g')}
 	\end{align}
@@ -197,13 +205,31 @@
 	\begin{align}
 		\omega_g^2(r) = C \absolutevalue{\frac{\grad \rho(r)}{\rho(r)}}^4
 	\end{align}
-	where C is a paramater to be adjusted. The last part of $g$ is 
+	where C is a paramater to be adjusted. The last term in $g$ is
 	\begin{align}
 		\kappa(r) &= b \frac{\nu_F^2(r)}{\omega_p(r)} \\
 		\nu_F(r) &= (3 \pi^2 \rho)^{1/3}
 	\end{align}
-	where b is another adjustable parameter.
-	Despite the large amount of equations here, it's important to note that everything here relies on only two things, the electron density, $\rho(r)$, at a certain point $r$, and the \emph{total} electron density.  
+	where $b$ is another adjustable parameter which helps to control the short range dampening of the $1/R^6$ asymptote. $\nu_F(r)$ is the local Fermi velocity . 
+	Despite the large amount of equations here, it's important to note that everything here relies on only two things, the electron density, $\rho(r)$, at a certain point $r$, and the \emph{total} electron density. 
+	In order for the long range electron correlation energy to go to zero at the electron gas limit, a constant relying on the adjustable parameter $b$ is multiplied by the total number of electrons in the system. This is then added on to the correlation energy to give the new correlation energy.
+	\begin{align}
+		E_\text{C}^\text{VV10} = E_\text{C}^\text{NL} + \beta (b)N_{e^-}
+	\end{align}
+	Where $N_e^-$ is the number of electrons and 
+	\begin{align}
+		\beta(b) = \frac{1}{32} \left(\frac{3}{b^2}\right)^{\frac{3}{4}}
+	\end{align}
+	$b$ and $C$ were originally fit on the S22 data set, giving them values of $5.9$ and $0.0093$ respectively.\cite{Vydrov2012} $b$ affects short range dispersion forces greatly, and as such is normally refitted depending on the use case i.e. if it typcially overbinds or underbinds for a certain scenario.
+	In the original paper, Vydrov and Van Voorhis pair VV10 with the exchange functional rPW86 and the correlation functional PBE. Using the same parameterisation as the similar vdw-DF2 functional, this gives the final VV10 exchange correlation energy to be 
+	\begin{align}
+		E_\text{XC}^{VV10} = E_\text{X}^\text{rPW86} + E_\text{C}^{PBE} + E_\text{C}^{VV10}
+	\end{align} 
+	The semi-local exchange functional, rPW86, is known to suffer greatly from self-interaction error (SIE), which causes problems with charge transfer complexes and transition states of chemical reactions. Long-range corrected (LC) hybrid exchange funcitonals have been shown to reduce SIE. \cite{vydrov2006-LC-Hybrids} The use of LC hybrids has also shown to be effective at describing the repulsive parts of the van der Waals potential. \cite{sato2007-LC-Hybrids} VV used the LC-$\omega$PBE exchange functional using the parameterisation of $C = 0.0089$, $b = 6.3$, and $\omega = 0.45$.
+	VV10 can be paired with almost any exchange correlation functional, however it is best to use functionals that give little to no major van der Waals forces, as to avoid double counting.
+	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicitive of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much hheavier, as such $b \approx 8$.\cite{Grimme2011}
+	
+	\subsubsection{Applications}
 
 
 	
