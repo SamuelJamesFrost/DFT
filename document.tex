@@ -5,6 +5,9 @@
 \def\ID{20184093}
 \input{header.tex}
 
+\newcommand{\kcal}{kcal mol\(^{-1}\)}
+\usepackage{amsmath}
+
 \usepackage[style=ieee,citestyle=ieee]{biblatex}
 \addbibresource{references.bib}
 \usepackage[font=small]{caption}
@@ -12,6 +15,8 @@
 \usepackage{xcolor}
 
 \newcommand{\al}{\emph{et al. }}
+\newcommand{\oA}{\si{\angstrom}}
+
 
 \begin{document}
 	\thispagestyle{empty}
@@ -111,7 +116,7 @@
 
 	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
 
-	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see section 3.
+	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see section 3.
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
 	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
@@ -225,14 +230,47 @@
 	\begin{align}
 		E_\text{XC}^{VV10} = E_\text{X}^\text{rPW86} + E_\text{C}^{PBE} + E_\text{C}^{VV10}
 	\end{align} 
-	The semi-local exchange functional, rPW86, is known to suffer greatly from self-interaction error (SIE), which causes problems with charge transfer complexes and transition states of chemical reactions. Long-range corrected (LC) hybrid exchange funcitonals have been shown to reduce SIE. \cite{vydrov2006-LC-Hybrids} The use of LC hybrids has also shown to be effective at describing the repulsive parts of the van der Waals potential. \cite{sato2007-LC-Hybrids} VV used the LC-$\omega$PBE exchange functional using the parameterisation of $C = 0.0089$, $b = 6.3$, and $\omega = 0.45$.
+
+	The semi-local exchange functional, rPW86, is known to suffer greatly from self-interaction error (SIE), which causes problems with charge transfer complexes and transition states of chemical reactions. This caused strong overbinding in hydrogen bonded complex.\cite{Vydrov2012} Long-range corrected (LC) hybrid exchange funcitonals have been shown to reduce SIE. \cite{vydrov2006-LC-Hybrids} The use of LC hybrids has also shown to be effective at describing the repulsive parts of the van der Waals potential. \cite{sato2007-LC-Hybrids} VV used the LC-$\omega$PBE exchange functional using the parameterisation of $C = 0.0089$, $b = 6.3$, and $\omega = 0.45$, this alternative long-range corrected method is known as LC-VV10, and generally fixes the overbinding of hydrogen bonds.
+
 	VV10 can be paired with almost any exchange correlation functional, however it is best to use functionals that give little to no major van der Waals forces, as to avoid double counting.
 	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicitive of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much hheavier, as such $b \approx 8$.\cite{Grimme2011}
 	
 	\subsubsection{Applications}
-
-
+	\begin{figure*}
+		\centering
+		\begin{tabular}[]{c|c c c c c}
+			& vdW-DF2 & VV10 & LC-VV10 & $\omega$B97X-D & M06-2X\\
+			\hline
+			& \multicolumn{5}{c}{Hydrogen Bonded Systems}\\
+			MAE & 0.62 & 0.53 & 0.20 & 0.16 & 0.32\\
+			MAPE & 5.8 & 6.4 & 2.3 & 2.2 & 3.9\\
+			& \multicolumn{5}{c}{Dispersion Based Systems}\\
+			MAE & 0.33 & 0.20 & 0.10 & 0.50 & 0.29\\
+			MAPE & 8.7 & 7.9 & 3.3 & 17.2 & 10.2\\
+			& \multicolumn{5}{c}{Mixed Behaviour Systems}\\
+			MAE & 0.49 & 0.15 & 0.17 & 0.20 & 0.26\\
+			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
+		\end{tabular}
+		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in Ref \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MPE is the mean absolute percentage error. }
+		\label{fig:VV10S66}
+	\end{figure*}
+		
+	%%%%%%%%% DO S66 2012 PAPER INSTEAD OF THE S22 2010, JUST REPLACE THE VALUES AND TALK ABOUT THE OTHER FUNCTIONALS, MAKE NICE TABLE FOR IT, FIND SOME OTHER PAPERS CITING VV10, MAYBE TALK ABOUT TOTAL CITATIONS? 3068 before
+	%%%%%%%IMPORTANT NOTE FOR LC-VV10 -> TIME LIMITING STEP IS ACTUALLY THE EXCHANGE COMPONENT :MIND=BLOWN:
 	
+	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{vdW-DF02-orignal-temp}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
+
+	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section 3.1.1, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
+	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
+
+	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is VV10 without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
+
+	Adhikari \al researched the effectiveness of using non-local density functionals to model the adsorption of Benzene to the (1 1 1) surfaces of copper, gold, and silver.\cite{VV10-Adsorption}  For the energy of adsorption, VV10 had a mean error of 0.1 eV (14\%), whilst vdW-DF2 overbound by a rather large 0.28eV (40\%) compared to plain PBE's mean error of 0.56 eV (82\%) the importance of modelling van der Waals interactions properly becomes apparent. 
+
+	%************* IMPORTANT *********
+	% SAVE THE GRIMME PAPER ON PAIRING VV10 WITH LDA AND GGA FOR THE CONCLUSION AS IT DIRECTLY COMPARES D3!!
+
 	\newpage
 	\printbibliography
 
