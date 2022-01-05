@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper,twocolumn,twoside]{extarticle}
 
-\title{{\TH}e Olde Dispersion Corrections in Density Field Theory}
+\title{Dispersion Corrections in Density Field Theory}
 \author{Samuel James Frost}
 \def\ID{20184093}
 \input{header.tex}
@@ -16,6 +16,8 @@
 
 \newcommand{\al}{\emph{et al. }}
 \newcommand{\oA}{\si{\angstrom}}
+\renewcommand{\d}{\text{d}}
+
 
 
 \begin{document}
@@ -56,7 +58,7 @@
 	$E_X$, the exchange energy, accounts for the much stronger correlated moton of electron sharing the same spin, caused by the Pauli exclusion principle, and removes the non-physical self repulsion terms included in $E_J$. $E_C$, the correlation energy, is much smaller and accounts for the weaker correlated motion of electrons with opposite spin. 
 
 	It is the exchange correlation energy which represents van der Waals interactions between atoms and molecules, so its accurate calculation is vital to many systems.
-	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approxmiation) and GGA (generalised gradient approximation) (such as PBE). 
+	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approxmiation)\cite{LDA-Kohn1965} and GGA (generalised gradient approximation)\cite{GGA-Becke1988,GGA-Perdew1986} (such as PBE\cite{PBE}). 
 	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{vdWImportance-Kaplan2006} The LDA functional assumes that the exchange correlation energy depends on the local electron density at a single point in space only, which is modelled as a uniform electron gas.\cite{LDA-Kohn1965} The slightly more complex GGA method uses both the local electron density at each point, but also its \emph{gradient}, giving better results.\cite{GGA-Becke1988}\cite{GGA-Perdew1986} A consequence of this is that only local (i.e. short range) contributions to the exchange correlation energy are considered. Therefore there is a lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
 
 	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of disperion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
@@ -66,7 +68,8 @@
 	%%%%    WE HAVE AN EXACT EXPRESSION FOR IT -> LDA WORKS FOR IT 
 	%%%% https://mattermodeling.stackexchange.com/questions/1320/can-dft-be-exact-in-the-limit-of-the-uniform-electron-gas 
 
-	\section{Semi-emperical Corrections}
+	\section{Semi-empirical Corrections}
+	\label{sec:semi-empirical}
 	\subsection{DFT-D2}
 	\subsubsection{Theory}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
@@ -164,28 +167,28 @@
 
 
 
-	\section{Non-Local DFT Functionals}
-
-	Unlike the semi-empirical \emph{corrections} introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, VV10 helps to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
+	\section{Non-Local Correlation Functionals}
+	Unlike the semi-empirical correction terms introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
 	\begin{align}
-		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{LDA} + E_\text{C}^\text{NL}
+		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{L} + E_\text{C}^\text{NL}
 	\end{align} 
 
 	The non-local correlation energy (in natural units) is defined as 
 	\begin{align}
 		E^\text{NL}_\text{C} = \frac{1}{2} \int dr dr' \rho(r) \Phi(r, r') \rho(r')
 	\end{align}
-	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. This allows for a perturbation at a point $r$ then induces an exchange correlation at a far away point $r'$
-	\color{red} The kernel is the heart of that which makes the functional distinct, and varies from functional to functional.\color{black}
+	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. This allows for a perturbation at a point $r$ which then induces electron correlation at a far away point $r'$. The kernel is the heart of that which makes the functional distinct, and varies from functional to functional. All modern non-local correlation functionals take this form, which is based off the work of Dobson and Dinte (DD) \cite{DD}, and, Andersson, Langreth, and Lundqvist (ALL)\cite{ALL}.
+	In order for a non-local correlation functional to be "seamless" it must not operate in the same region as the local correlation functional as to avoid double counting. 
+
+	\subsection{vdW-DF2}
+	In 2004 Dion \al introduced the first non-local correlation method, vdW-DFT1. \cite{vdw04Original-Dion2004} This proved a success, especially in areas suhc as adsorption to surfaces and graphene interactions, where previous methods had failed. \cite{vdW-review} However, it still vastly underestimated hydrogen bonding, and overestimate molecular separation. The derivation of the kernel for both vdW-DF1 and vdW-DF2 is large and tedious, and as such not included in this limited review, however it can be found in reference \cite{vdw04Original-Dion2004}. For a similar but simpler example based on the same principles, see section 3.2.1.
+
+	To fix the issues with vdW-DF1, Lee \al proposed an improved model in 2010, vdW-DF2. \cite{Lee2010-vdW-DF2-Original} The revPBE\cite{revPBE} exchange functional which was used in the original was replaced with the less repulsie rPW86 functional. \cite{rPW86} Along with this a reparamaterisation was perfomed on the constant controlling the size of the exchange functional. This indeed fixed most of the problems with vdW-DF1, performing especially well on small molecules. Some problems still remained for large bulk molecules and adsorption to metals. 
+
 
 	\subsection{VV10}
-	\subsubsection*{Notes}
-	Easy to implement, computationally efficient undemanding in terms of the basis set quality or
-	the fineness of the numerical integration grid. vdw-DF2 seems to underbind -- vydrov2012
-	\subsubsection{Theory}
-	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their earlier method, VV09.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
+	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their method from the previous year, VV09, which was based on Dion \al's vdW-DFT1 method.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
 	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011} 
-	VV10 
 
 	After much thought, the correlation kernel is found to be  
 	\begin{align}
@@ -236,7 +239,7 @@
 	VV10 can be paired with almost any exchange correlation functional, however it is best to use functionals that give little to no major van der Waals forces, as to avoid double counting.
 	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicitive of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much hheavier, as such $b \approx 8$.\cite{Grimme2011}
 	
-	\subsubsection{Applications}
+	\subsubsection{Performance and Application}
 	\begin{figure*}
 		\centering
 		\begin{tabular}[]{c|c c c c c}
@@ -256,23 +259,98 @@
 		\label{fig:VV10S66}
 	\end{figure*}
 		
-	%%%%%%%%% DO S66 2012 PAPER INSTEAD OF THE S22 2010, JUST REPLACE THE VALUES AND TALK ABOUT THE OTHER FUNCTIONALS, MAKE NICE TABLE FOR IT, FIND SOME OTHER PAPERS CITING VV10, MAYBE TALK ABOUT TOTAL CITATIONS? 3068 before
+	%%%%%%%%% DO S66 2012 PAPER INSTEAD OF THE S22 2010, JUST REPLACE THE VALUES AND TALK ABOUT THE OTHER FUNCTIONALS, MAKE NICE TABLE FOR IT, FIND SOME OTHER PAPERS CITING VV10, MAYBE TALK ABOUT TOTAL CITATIONS?
 	%%%%%%%IMPORTANT NOTE FOR LC-VV10 -> TIME LIMITING STEP IS ACTUALLY THE EXCHANGE COMPONENT :MIND=BLOWN:
+	% Keep the comparisons of vdW-DFT2 and VV10 together as they're normally compared that way 
 	
-	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{vdW-DF02-orignal-temp}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
+	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
 
 	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section 3.1.1, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
 	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
 
-	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is VV10 without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
+	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
 
 	Adhikari \al researched the effectiveness of using non-local density functionals to model the adsorption of Benzene to the (1 1 1) surfaces of copper, gold, and silver.\cite{VV10-Adsorption}  For the energy of adsorption, VV10 had a mean error of 0.1 eV (14\%), whilst vdW-DF2 overbound by a rather large 0.28eV (40\%) compared to plain PBE's mean error of 0.56 eV (82\%) the importance of modelling van der Waals interactions properly becomes apparent. 
 
+	
+
+
+
 	%************* IMPORTANT *********
 	% SAVE THE GRIMME PAPER ON PAIRING VV10 WITH LDA AND GGA FOR THE CONCLUSION AS IT DIRECTLY COMPARES D3!!
+	% 3450 - 3/1/21
+	
+
+	% Compared use/citations on web of sciences in  conclusion to how widespread it is i.e. if it were so great why don't more people use it 
+
+	\section{Exchange-Dipole Moment Model}
+	Becke and Johnson proposed a model in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the probability of finding another electron with the same spin at point $\vec{r}'$ \color{red}(Fermi radius?)\color{black} is given by 
+	\begin{align}
+		h_{X\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
+										\phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r}')
+										\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
+	\end{align}
+	The sum is over occupied orbitals, $i$ and $j$, of spin $\sigma$, where $\rho_\sigma$ is the total spin-$\sigma$ electron density. 
+
+	As the electron moves through space so does its hole; the electron and its hole are charge neutral overall. 
+	The shape of the hole depends on the position of the electron, $\vec{r}$, this shape is almost never spherically symmetric about the electron, except for the case of a uniform electron gas. This lack of symmetry creates an exchange hole dipole moment, given by 
+	\footnotesize
+	\begin{align}
+		\label{eq:exchange-dipole}
+		\vec{d_{X\sigma}}(\vec{r}) = \left( \frac{1}{\rho_\sigma(\vec{r})} \sum_{ij}\int
+									 \phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r})' 
+									 \vec{r}\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
+									 \d\vec{r}'\right) - \vec{r}
+	\end{align}
+	\normalsize
+	\NB{Some papers may use $\mu$ for the dipole moment instead of $d$}
+
+	This exchange dipole moment, $\vec{d_{X\sigma}}(\vec{r})$, in atom A, will induce a dipole moment in another atom, B, and vice versa. This dipole-dipole interaction is proportional to the square of the respective exchange dipole moment. The square of the \emph{atomic} exchange dipole moment is given by
+	\begin{align}
+		\langle d_{X}^2 \rangle_A = \sum_\sigma \int \d\vec{r} w_A(\vec{r}) \rho_\sigma(\vec{r}) d_{X,\sigma}^2(\vec{r})
+	\end{align}
+	$w_A(\vec{r})$ is the Hirshfeld partitioning weight for an atom $A$. This helps to account for the molecular environment of an atom, by estimating changes in the atomic volume and thus changes the polarisability. 
+	Where 
+	\begin{align}
+		w_A(\vec{r}) = \frac{\rho_A^\text{atom}(\vec{r})}{\sum_B\rho_B^\text{atom}(\vec{r})}
+	\end{align}
+
+	The exchange-hole dipole moment induced in atom B from atom A, at length $R$, will have a potential energy of 
+	\begin{align}
+		U^{AB} = -2\langle d_X^2 \rangle_A \alpha_B / R^6
+	\end{align} 
+	where the reverse interaction is  
+	\begin{align}
+		U^{BA} = -2\langle d_X^2 \rangle_B \alpha_A / R^6
+	\end{align} 
+	$\alpha$ is the polarisability of a given atom modified to account for chemical environment where
+	\begin{align}
+		\alpha_A = \alpha_A^\text{free} \frac{\int\d\vec{r} w_a(\vec{r})\rho(\vec{r})r^3}{\int \d\vec{r}\rho_A^\text{free}(\vec{r})r^3}
+	\end{align}
+	
+	
+	$\langle d_X^2 \rangle$ is given by the integral
+	\begin{align}
+		\langle d_X^2 \rangle = \int \rho_\alpha(\vec{r}) d_{X\alpha}(\vec{r}) \d \vec{r} +
+								\int \rho_\beta(\vec{r}) d_{X\beta}(\vec{r}) \d \vec{r}
+	\end{align}
+	where $\rho_\alpha$ is the density of spin up electrons, and $\rho_\beta$ the density of spin down. $d_{X\sigma}(\vec{r})^2$ is the squared \emph{exact} exchange-hole dipole moment of $\sigma$ spin electron at point $\vec{r}$ found in equation \ref{eq:exchange-dipole}. This is a cumbersome integral however, as such Becke and Roussel derived an approximation to this exact model, dubbed BRX, of the form
+	\begin{align}
+		d_{BRX,\sigma}^2(\vec{r}) = \left(\frac{e^{-x}}{8\pi\rho_\sigma(\vec{r})}\right)^{2/3}x^2
+	\end{align} 
+	Where $x$ is depent on the electron density and its gradient, for more details see reference \cite{XDM-original}. As this method is much faster than the exact equation in equation \ref{eq:exchange-dipole}, from here on out $d_{X,\sigma}$ will refer to $d_{BRX,\sigma}$, as it sees the most useage by far. 
+
+	Using second-order perturbation theory\cite{XDM-dipole} the dispersion energy can be written as 
+	\begin{align}
+		E_\text{disp} = -\frac{C_6}{R^6}
+	\end{align}
+	This is same principle as the methods mentioned in section 2, but with a different derivation of the $C_6$ constant, which is written as
+	\begin{align}
+		C_6 = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}
+	\end{align} 
+	Thus the final isotropic intermolecular $C_6$ dispersion coefficient is a 
 
 	\newpage
 	\printbibliography
-
 \end{document}
 
