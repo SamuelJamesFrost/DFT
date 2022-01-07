@@ -96,6 +96,7 @@
 	\begin{align} \label{eq:damp}
 		f_{\rm damp}(R_{i,j}) \defeq \frac{1}{1+\exp(-d(R_{i,j}/R_r -1))}
 	\end{align}
+
 	\begin{figure}
 		\begin{tikzpicture}
 		  \begin{axis}[
@@ -270,10 +271,6 @@
 
 	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
 
-	Adhikari \al researched the effectiveness of using non-local density functionals to model the adsorption of Benzene to the (1 1 1) surfaces of copper, gold, and silver.\cite{VV10-Adsorption}  For the energy of adsorption, VV10 had a mean error of 0.1 eV (14\%), whilst vdW-DF2 overbound by a rather large 0.28eV (40\%) compared to plain PBE's mean error of 0.56 eV (82\%) the importance of modelling van der Waals interactions properly becomes apparent. 
-
-	
-
 
 
 	%************* IMPORTANT *********
@@ -284,20 +281,26 @@
 	% Compared use/citations on web of sciences in  conclusion to how widespread it is i.e. if it were so great why don't more people use it 
 
 	\section{Exchange-Dipole Moment Model}
-	Becke and Johnson proposed a model in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the probability of finding another electron with the same spin at point $\vec{r}'$ \color{red}(Fermi radius?)\color{black} is given by 
+	\subsection{Theory}
+	Becke and Johnson proposed a model\cite{XDM-Original} in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the amount to which the hole depletes the probability of finding another electron with the same spin at point $\vec{r}'$ is given by 
 	\begin{align}
-		h_{X\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
+		h_{X,\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
 										\phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r}')
 										\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
 	\end{align}
-	The sum is over occupied orbitals, $i$ and $j$, of spin $\sigma$, where $\rho_\sigma$ is the total spin-$\sigma$ electron density. 
+	As such, if $\vec{r} = \vec{r}'$ then 
+	\begin{align}
+		h_{X,\sigma}(\vec{r}, \vec{r}) = -\rho_\sigma(\vec{r})
+	\end{align}
+	thus, the probability of finding two electrons at the same point is \emph{zero}.
+	The sum is over occupied real orbitals, $i$ and $j$, of spin $\sigma$, where $\rho_\sigma$ is the total spin-$\sigma$ electron density. The existence of an electron at $\vec{r}$ reduces the chance to find another electron at $\vec{r}'$, 
 
 	As the electron moves through space so does its hole; the electron and its hole are charge neutral overall. 
 	The shape of the hole depends on the position of the electron, $\vec{r}$, this shape is almost never spherically symmetric about the electron, except for the case of a uniform electron gas. This lack of symmetry creates an exchange hole dipole moment, given by 
 	\footnotesize
 	\begin{align}
 		\label{eq:exchange-dipole}
-		\vec{d_{X\sigma}}(\vec{r}) = \left( \frac{1}{\rho_\sigma(\vec{r})} \sum_{ij}\int
+		\vec{d_{X,\sigma}}(\vec{r}) = \left( \frac{1}{\rho_\sigma(\vec{r})} \sum_{ij}\int
 									 \phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r})' 
 									 \vec{r}\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
 									 \d\vec{r}'\right) - \vec{r}
@@ -309,7 +312,7 @@
 	\begin{align}
 		\langle d_{X}^2 \rangle_A = \sum_\sigma \int \d\vec{r} w_A(\vec{r}) \rho_\sigma(\vec{r}) d_{X,\sigma}^2(\vec{r})
 	\end{align}
-	$w_A(\vec{r})$ is the Hirshfeld partitioning weight for an atom $A$. This helps to account for the molecular environment of an atom, by estimating changes in the atomic volume and thus changes the polarisability. 
+	$w_A(\vec{r})$ is the Hirshfeld partitioning\cite{Hirshfeld} weight for an atom $A$. This helps to account for the molecular environment of an atom, by estimating changes in the atomic volume and thus changes the polarisability. 
 	Where 
 	\begin{align}
 		w_A(\vec{r}) = \frac{\rho_A^\text{atom}(\vec{r})}{\sum_B\rho_B^\text{atom}(\vec{r})}
@@ -338,7 +341,7 @@
 	\begin{align}
 		d_{BRX,\sigma}^2(\vec{r}) = \left(\frac{e^{-x}}{8\pi\rho_\sigma(\vec{r})}\right)^{2/3}x^2
 	\end{align} 
-	Where $x$ is depent on the electron density and its gradient, for more details see reference \cite{XDM-original}. As this method is much faster than the exact equation in equation \ref{eq:exchange-dipole}, from here on out $d_{X,\sigma}$ will refer to $d_{BRX,\sigma}$, as it sees the most useage by far. 
+	Where $x$ is depent on the electron density and its gradient, for more details see reference \cite{XDM-Original}. As this method is much faster than the exact equation in equation \ref{eq:exchange-dipole}, from here on out $d_{X,\sigma}$ will refer to $d_{BRX,\sigma}$, as it sees the most useage by far. 
 
 	Using second-order perturbation theory\cite{XDM-dipole} the dispersion energy can be written as 
 	\begin{align}
@@ -346,9 +349,50 @@
 	\end{align}
 	This is same principle as the methods mentioned in section 2, but with a different derivation of the $C_6$ constant, which is written as
 	\begin{align}
-		C_6 = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}
+		C_6^{AB} = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}
 	\end{align} 
-	Thus the final isotropic intermolecular $C_6$ dispersion coefficient is a 
+	With a suitable damping function applied, like the one seen in equation \ref{eq:damp} and figure \ref{fig:Fermi}, we can write our final dispersion energy as a sum over atoms $A$ and $B$ as 
+	\begin{align}
+		E_\text{disp} = - \sum_{A,B} \frac{C_6^{AB}}{R^6} f_\text{damp}(R)
+	\end{align}
+	In 2007, Becke and Johnson updated their approach\cite{XDM-Revisited} by adding higher order coefficients into the mix, derived from the exchange quadrupole and octupole moments, taking $C_8$ and $C_{10}$ coefficients respectively. These coefficients can be found in reference \cite{XDM-Revisited} This new approach takes the form of 
+	\begin{align}
+		E_\text{disp} = -\sum_{A,B} \sum_{n=6,8,10} \frac{C_n^{AB}}{R^n} f^n_\text{damp, BJ}(R)
+	\end{align}
+	Where a novel damping functiona developed by Becke and Johnson is being used \cite{BJ-Damp}
+	\begin{align}
+		f^n_\text{damp,BJ} (R) = \frac{R^n}{R^n + (a_1 R_0 + a_2)^n}\\
+		R_0 = \frac{1}{3} \left( \sqrt{\frac{C_8^{AB}}{C_6^{AB}}} + \sqrt{\frac{C_{10}^{AB}}{C_8^{AB}}}
+		+ \sqrt[^4]{\frac{C_{10}^{AB}}{C_6^{AB}}} \right)
+	\end{align}
+	Where $a_1$ and $a_2$ depend on the functional being used.
+	
+	The attentive reader will notice that unlike previous methods mentioned, XDM uses no fitting of parameters. This makes it very theoretically pure. This also makes XDM a good candidate for studying unusual edge case systems, which other highly empirical methods like those in section 2 will fail. 
+
+	\subsection{Application}
+	Otero-de-la-Roza \al tested XDM for bulk ionic crystals\cite{Roza-2020-XDM}, although this doesn't immediately seem like the best use case for a van der Waals correction it is an important to note that even ionic crystals have van der Waals interactions, and so of course it is important that they are modelled correctly. Not only that, but it is important to make sure that XDM does not worsen results of dispersionless functionals. PBE is one of the most popular functionals for cases like this, however for XDM 86bPBE is the recommended functional. For details on the damping function parameters see reference \cite{PBE-underbinding}. This is evidenced in the the calculation of the lattice constants for 20 alkali halide. PBE-XDM had a mean error of $-0.134$ \oA, a similar result with a different sign to PBE-D3 seen in section 2.2, compared to base PBE which had a mean error of  $0.164$ \oA. Otero-de-la-Roza \al think this poor result is due to PBE's nature to underestimate non-bonded repulsion\cite{PBE-underbinding}, this will in turn cause PBE-XDM to overbind dispersion forces, causing a much smaller latice constant. The use of the recommended 86bPBE functional gave a much more impressive result of $-0.038$ \oA. Unfortunately there is still a systematic underestimation for 86bPBE-XDM, the problem may lie in the delocalisation error for the functional\cite{86bPBE-delocalisation}. To remedy this a hybrid functional was tested, 86bPBE-25X-XDM gave a very impressive results of $-0.017$, the lowest of all the functionals testeda\cite{Roza-2020-XDM}. 
+
+	Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM perfermed extremely well, with all of its values for gold and silver being within the uncertainty, with copper being 0.06 eV outside the margin of uncertainty, giving an overal MAE of  0.04 eV, more accurate than PBE-XDM's 0.10 eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. 
+
+	\begin{figure*}
+		\centering
+		\begin{tabular}[]{c|c c c c c}
+		Functional & \multicolumn{3}{c}{Adsorption Energy / eV} & \multicolumn{2}{c}{Adsorption Distance / \oA}\\
+			\hline
+			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & Ag (1 1 1) & Ordering y/n \\
+		PBE	& \\
+		PBE-D2 & \\
+		PBE-D3 &\\
+		PBE-rVV10 & \\
+		SCAN-rVV10 &\\
+		PBE-XDM & \\
+		B86bPBE-XDM & \\
+
+		\end{tabular}
+	\end{figure*}
+	
+
+	%*************** SHOULD MAYBE REORDER THE PAPER TO HAVE APPLICATIONS AT THE END, AND JUST HAVE IT BE DIFFERENT KINDS I.E. ADSORPTION TO METAL SURFACES, THAT WAY THERE'S NO REPEPTITION AND WE CAN COMPARE THINGS BETTER, CONSIDER!!!
 
 	\newpage
 	\printbibliography
