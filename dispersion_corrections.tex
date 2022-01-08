@@ -68,10 +68,10 @@
 	%%%%    WE HAVE AN EXACT EXPRESSION FOR IT -> LDA WORKS FOR IT 
 	%%%% https://mattermodeling.stackexchange.com/questions/1320/can-dft-be-exact-in-the-limit-of-the-uniform-electron-gas 
 
-	\section{Semi-empirical Corrections}
+	\section{Overview of Methods}
+	\subsection{Semi-empirical Corrections}
 	\label{sec:semi-empirical}
-	\subsection{DFT-D2}
-	\subsubsection{Theory}
+	\subsubsection{DFT-D2}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
 	the successor to his more limited DFT-D method. The main setback of this original method was the narrow scope of the atoms as it could model, only Hydrogen and Carbon through to Neon. This, paired with very large inconsistencies for thermochemical calculations (e.g. energy of atomisation) made it a very limited method in dire need of improvement for it to become widespread.
 
@@ -126,16 +126,10 @@
 	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
 
 	\emph{Maybe talk about empiricism more}
-	\subsubsection{Application}
 
-	%One area where DFT-D2 fails is under extreme conditions, Ilawe \emph{et al.} found that DFT-D2 beings to break down for Palladium Hydrides under large amounts of stress, giving errors close to 40\% when compared with experimental data.\cite{Ilawe2015} This, coupled with its general poor performance when heavy metals surfaces are involved make for some very poor results.\emph{REFERENCE THIS}
-	Researching how different computational methods model the adsorption of noble gasses to heavy metals, Chen \emph{et al.} found that DFT-D2 vastly overestimates the energy of adsorption by a factor of two, leading to the conclusion that "the DFT-D2 method, at least with recommended parameterisation, is not suitable for investigating noble gas adsorption on metals".\cite{Chen2012} 
-	In a limited study involving a Ag (1 1 1) surface and aromatic molecules, Schiavo \al attempted to reparamataise DFT-D2 to better suit adsorption to metal surfaces. Fitting $R_r$ against MP2 data, causing an increase in $R_r$, was found to limit overbinding whilst still semi-accurately describing the geometry.\cite{Schiavo2018} This method could be applied to other metal surfaces and adsorbants in the future. 
 
-	Kim \emph{et al.} compared the results of the equilibrium spacing for sheets of black phosphorus with and without multiple dispersion corrections applied. For PBE with no correction there was a 10\% difference compared with experimental data, however with DFT-D2 applied that dropped down to only 0.5\%, obviously a very successful result for DFT-D2.\cite{Kim2014} 
-
-	\subsection{DFT-D3}
-	\subsubsection{Theory}
+	\subsubsection{DFT-D3}
+	\label{sec:D3}
 	As mentioned earlier, DFT-D2 does not consider the chemical environment of the atom. Covalent bonds change the electronic structure, half occupied atomic orbitals become lower energy molecular orbitals. This lowers the polarisability of the atom, meaning a smaller $C_6$ constant is needed. DFT-D3 considers the coordination number of the atom, giving a more accurate result. \cite{Grimme2010} D3 also uses higher order correction terms (which correspond to a higher order distance factor too), however these generally stop at $C_8$, as any higher has shown to give unstable results for larger molecules.
 
 	The coordination number for an atom $A$ in a molecule with $N$ atoms is given by 
@@ -159,19 +153,9 @@
 	\end{align}
 	Where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$ is the highest order dispersion coefficient calculated however, $C_{10}$ is ignored and instead absorbed into the $s_8$ scaling factor.
 
-	\subsubsection{Application}
-	 %GGA functionals such as PBE tend to underestimate the cohesive energy of a chemical. Boungou \al calculated the cohesive energy of silver using the PBE functional and compared it with the D3 correction applied, finding errors of 12\% and 1\% respectively.\cite{Boungou2021} 
-	%*****************************************
-	 %This kovacs one only uses D3, which could be useful if we're struggling
-	 Kovacs \al ran some comparisons of different functionals paired with dispersion corrections on noble gasses, a common benchmark for dispersion corrections. For the neon dimer, BLYP-D3 was 5\% (absolute) more accurate than BLYP-D2, and for the interaction energy, was 50\% (also absolute) more accurate.\cite{Kovacs2017} 
-	 This is clearly a great improvement over the previous method, and for interactions where simple van der Waals interactions are concerned, shows how robust the updated method is. However, careful consideration for the correct functional should be had, as more basic functionals, such as PBE, returned values twice as large as the experimental data.\cite{Kovacs2017}
-
-	 FIND DISAGREEING EVIDENCE 
 
 
-
-	\section{Non-Local Correlation Functionals}
-	\subsection{Intro hiding}
+	\subsection{Non-Local Correlation Functionals}
 	Unlike the semi-empirical correction terms introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
 	\begin{align}
 		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{L} + E_\text{C}^\text{NL}
@@ -184,13 +168,13 @@
 	where $\Phi(r, r')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(r)$ is the electron density at point $r$. This allows for a perturbation at a point $r$ which then induces electron correlation at a far away point $r'$. The kernel is the heart of that which makes the functional distinct, and varies from functional to functional. All modern non-local correlation functionals take this form, which is based off the work of Dobson and Dinte (DD) \cite{DD}, and, Andersson, Langreth, and Lundqvist (ALL)\cite{ALL}.
 	In order for a non-local correlation functional to be "seamless" it must not operate in the same region as the local correlation functional as to avoid double counting. 
 
-	\subsection{vdW-DF2}
+	\subsubsection{vdW-DF2}
 	In 2004 Dion \al introduced the first non-local correlation method, vdW-DFT1. \cite{vdw04Original-Dion2004} This proved a success, especially in areas suhc as adsorption to surfaces and graphene interactions, where previous methods had failed. \cite{vdW-review} However, it still vastly underestimated hydrogen bonding, and overestimate molecular separation. The derivation of the kernel for both vdW-DF1 and vdW-DF2 is large and tedious, and as such not included in this limited review, however it can be found in reference \cite{vdw04Original-Dion2004}. For a similar but simpler example based on the same principles, see section 3.2.1.
 
 	To fix the issues with vdW-DF1, Lee \al proposed an improved model in 2010, vdW-DF2. \cite{Lee2010-vdW-DF2-Original} The revPBE\cite{revPBE} exchange functional which was used in the original was replaced with the less repulsie rPW86 functional. \cite{rPW86} Along with this a reparamaterisation was perfomed on the constant controlling the size of the exchange functional. This indeed fixed most of the problems with vdW-DF1, performing especially well on small molecules. Some problems still remained for large bulk molecules and adsorption to metals. 
 
 
-	\subsection{VV10}
+	\subsubsection{VV10}
 	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their method from the previous year, VV09, which was based on Dion \al's vdW-DFT1 method.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
 	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011} 
 
@@ -243,48 +227,11 @@
 	VV10 can be paired with almost any exchange correlation functional, however it is best to use functionals that give little to no major van der Waals forces, as to avoid double counting.
 	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicitive of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much hheavier, as such $b \approx 8$.\cite{Grimme2011}
 	
-	\subsection{Performance and Application}
-	\begin{figure*}
-		\centering
-		\begin{tabular}[]{c|c c c c c}
-			& vdW-DF2 & VV10 & LC-VV10 & $\omega$B97X-D & M06-2X\\
-			\hline
-			& \multicolumn{5}{c}{Hydrogen Bonded Systems}\\
-			MAE & 0.62 & 0.53 & 0.20 & 0.16 & 0.32\\
-			MAPE & 5.8 & 6.4 & 2.3 & 2.2 & 3.9\\
-			& \multicolumn{5}{c}{Dispersion Based Systems}\\
-			MAE & 0.33 & 0.20 & 0.10 & 0.50 & 0.29\\
-			MAPE & 8.7 & 7.9 & 3.3 & 17.2 & 10.2\\
-			& \multicolumn{5}{c}{Mixed Behaviour Systems}\\
-			MAE & 0.49 & 0.15 & 0.17 & 0.20 & 0.26\\
-			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
-		\end{tabular}
-		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in Ref \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MPE is the mean absolute percentage error. }
-		\label{fig:VV10S66}
-	\end{figure*}
-		
-	%%%%%%%%% DO S66 2012 PAPER INSTEAD OF THE S22 2010, JUST REPLACE THE VALUES AND TALK ABOUT THE OTHER FUNCTIONALS, MAKE NICE TABLE FOR IT, FIND SOME OTHER PAPERS CITING VV10, MAYBE TALK ABOUT TOTAL CITATIONS?
-	%%%%%%%IMPORTANT NOTE FOR LC-VV10 -> TIME LIMITING STEP IS ACTUALLY THE EXCHANGE COMPONENT :MIND=BLOWN:
-	% Keep the comparisons of vdW-DFT2 and VV10 together as they're normally compared that way 
-	
-	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
 
-	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section 3.1.1, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
-	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
-
-	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
-
-
-
-	%************* IMPORTANT *********
-	% SAVE THE GRIMME PAPER ON PAIRING VV10 WITH LDA AND GGA FOR THE CONCLUSION AS IT DIRECTLY COMPARES D3!!
-	% 3450 - 3/1/21
-	
 
 	% Compared use/citations on web of sciences in  conclusion to how widespread it is i.e. if it were so great why don't more people use it 
 
-	\section{Exchange-Dipole Moment Model}
-	\subsection{Theory}
+	\subsection{Exchange-Dipole Moment Model}
 	Becke and Johnson proposed a model\cite{XDM-Original} in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the amount to which the hole depletes the probability of finding another electron with the same spin at point $\vec{r}'$ is given by 
 	\begin{align}
 		h_{X,\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
@@ -372,32 +319,116 @@
 	
 	The attentive reader will notice that unlike previous methods mentioned, XDM uses no fitting of parameters. This makes it very theoretically pure. This also makes XDM a good candidate for studying unusual edge case systems, which other highly empirical methods like those in section 2 will fail. 
 
-	\subsection{Application}
-	% Otero-de-la-Roza \al tested XDM for bulk ionic crystals\cite{Roza-2020-XDM}, although this doesn't immediately seem like the best use case for a van der Waals correction it is an important to note that even ionic crystals have van der Waals interactions, and so of course it is important that they are modelled correctly. Not only that, but it is important to make sure that XDM does not worsen results of dispersionless functionals. PBE is one of the most popular functionals for cases like this, however for XDM 86bPBE is the recommended functional. For details on the damping function parameters see reference \cite{PBE-underbinding}. This is evidenced in the the calculation of the lattice constants for 20 alkali halide. PBE-XDM had a mean error of $-0.134$ \oA, a similar result with a different sign to PBE-D3 seen in section 2.2, compared to base PBE which had a mean error of  $0.164$ \oA. Otero-de-la-Roza \al think this poor result is due to PBE's nature to underestimate non-bonded repulsion\cite{PBE-underbinding}, this will in turn cause PBE-XDM to overbind dispersion forces, causing a much smaller latice constant. The use of the recommended 86bPBE functional gave a much more impressive result of $-0.038$ \oA. Unfortunately there is still a systematic underestimation for 86bPBE-XDM, the problem may lie in the delocalisation error for the functional\cite{86bPBE-delocalisation}. To remedy this a hybrid functional was tested, 86bPBE-25X-XDM gave a very impressive results of $-0.017$, the lowest of all the functionals testeda\cite{Roza-2020-XDM}. 
-
-	% Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM perfermed extremely well, with all of its values for gold and silver being within the uncertainty, with copper being 0.06 eV outside the margin of uncertainty, giving an overal MAE of  0.04 eV, more accurate than PBE-XDM's 0.10 eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. 
-
-	\begin{figure*}
-		\centering
-		\begin{tabular}[]{c|c c c c c}
-		Functional & \multicolumn{3}{c}{Adsorption Energy / eV} & \multicolumn{2}{c}{Adsorption Distance / \oA}\\
-			\hline
-			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & Ag (1 1 1) & Ordering y/n \\
-		PBE	& \\
-		PBE-D2 & \\
-		PBE-D3 &\\
-		PBE-rVV10 & \\
-		SCAN-rVV10 &\\
-		PBE-XDM & \\
-		B86bPBE-XDM & \\
-
-		\end{tabular}
-	\end{figure*}
-	
 
 	%*************** SHOULD MAYBE REORDER THE PAPER TO HAVE APPLICATIONS AT THE END, AND JUST HAVE IT BE DIFFERENT KINDS I.E. ADSORPTION TO METAL SURFACES, THAT WAY THERE'S NO REPEPTITION AND WE CAN COMPARE THINGS BETTER, CONSIDER!!!
 
+	\section{Perfomance and Application}
+	\subsection{Test Sets}
+	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
+
+	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section 3.1.1, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
+	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
+
+	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
+
+	\begin{figure*}
+		\centering
+		\label{VV10S66}
+		\begin{tabular}[]{c|c c c c c}
+			& vdW-DF2 & VV10 & LC-VV10 & $\omega$B97X-D & M06-2X\\
+			\hline
+			& \multicolumn{5}{c}{Hydrogen Bonded Systems}\\
+			MAE & 0.62 & 0.53 & 0.20 & 0.16 & 0.32\\
+			MAPE & 5.8 & 6.4 & 2.3 & 2.2 & 3.9\\
+			& \multicolumn{5}{c}{Dispersion Based Systems}\\
+			MAE & 0.33 & 0.20 & 0.10 & 0.50 & 0.29\\
+			MAPE & 8.7 & 7.9 & 3.3 & 17.2 & 10.2\\
+			& \multicolumn{5}{c}{Mixed Behaviour Systems}\\
+			MAE & 0.49 & 0.15 & 0.17 & 0.20 & 0.26\\
+			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
+		\end{tabular}
+		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in Ref \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MPE is the mean absolute percentage error. }
+		\label{fig:VV10S66}
+	\end{figure*}
+
+
+	\subsection{Adsorption to Metal Surfaces}
+	Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM perfermed quite well, with its values for gold and silver being within the uncertainty, however copper was underestimated by $0.06$ eV outside the margin of uncertainty, giving an overal MAE of  $0.04$ eV, still a great improvement on PBE-XDM's $0.10$ eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. 
+
+	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hybrides in the fitting data, and that by changing the training data a more accurate answer can be achieved. \cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievment. 
+
+	Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. 
+
+	This data emphasises that pairing the dispersion with the correct functional must not be overlooked, and can severly affect an experiment. 
+
+	\begin{figure*}
+		\centering
+		\begin{tabular}[]{c|c c c c | c c}
+		Functional & \multicolumn{4}{c}{Adsorption Energy / eV \cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA \cite{VV10-Adsorption}}\\
+			\hline
+			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & MAE & Ag (1 1 1) &  Ordering y/n\\
+		PBE	& 0.08 & 0.08 & 0.08 & 0.57 & 3.44 & n\\
+		PBE-D2 & 0.86 & --- & 1.35 & --- & --- & ---\\
+		PBE-D3 & 0.99 & 0.74 & 0.86 & 0.19 & 2.97 & n\\
+		PBE-D3(ABC) & 0.79 & 0.61 & 0.73 & 0.08 & --- & ---\\
+		PBE-rVV10 & --- & --- & --- & --- & 3.02 & n \\
+		SCAN-rVV10 & 0.74 & 0.68 & 0.73 & 0.04 & 2.98 & y\\
+		PBE-XDM & 0.54 & 0.58 & 0.61 & 0.10 & --- & ---\\
+		B86bPBE-XDM & 0.59 & 0.68 & 0.65 & 0.04 & 3.03 & y\\
+		Experimental & 0.69 $\pm$ 0.04 & 0.68 $\pm$ 0.05 & 0.65 $\pm$ 0.03 & --- & 3.04 $\pm$ 0.02 & ---
+
+		\end{tabular}
+	\end{figure*}
+
+
+	\subsection{Physical Properties}
+	Otero-de-la-Roza \al tested different dispersion corrections through bulk ionic crystals\cite{Roza-2020-XDM}, although this doesn't immediately seem like the best use case for a van der Waals correction it is an important to note that even ionic crystals have van der Waals interactions, and so of course it is important that they are modelled correctly. Not only that, but it is important to make sure that the correction does not worsen results of dispersionless functionals. PBE is one of the most popular functionals for cases like this, however, for XDM 86bPBE is the recommended functional. For details on the damping function parameters see reference \cite{PBE-underbinding}. 
+	
+	The lattice constants for 20 alkalie halides were calculated for comparison. PBE-XDM had a mean error of $-0.134$ \oA, a similar result with a different sign to PBE-D3 seen in section \ref{sec:D3}, compared to base PBE which had a mean error of  $0.164$ \oA. Otero-de-la-Roza \al think this poor result is due to PBE's nature to underestimate non-bonded repulsion\cite{PBE-underbinding}, this will in turn cause PBE-XDM to overbind dispersion forces, causing a much smaller latice constant. The use of the recommended 86bPBE functional gave a much more impressive result of $-0.038$ \oA. Unfortunately there is still a systematic underestimation for 86bPBE-XDM, the problem may lie in the delocalisation error for the functional\cite{86bPBE-delocalisation}. To remedy this a hybrid functional was tested, 86bPBE-25X-XDM gave a much lower mean mean error of $-0.017$, \cite{Roza-2020-XDM}. Tao \al developed a non-local correlation density method specialising in ionic solids. As one would expect, this method had a very impressive mean error of $-0.006$ eV.\cite{Tao-vdW}
+
+	GGA functionals tend to underestimate the cohesive energy and bulk moduli of crystelline solids. In 2021 Boungou \al compared the the bulk modulus and cohesive energy of silver for various dispersion corrections.\cite{Boungou2021} With the experimental value of 105.7 GPa, PBE-D3 (94.7 GPa) wasn't always much more successful than plain PBE, which had a commonly cited value of 91.1 GPa. PBE-vdW-DF2 improved on this result giving a bulk modulus of 108.8 GPa. PBE-D3 redeems itself in the calculation of the cohesive energy, giving an error of only 0.03 eV, this is an area where PBE-vdW-DF2 completely failed giving a sizeable 32\% error. The use of LC-VV10 instead may have helped to fix this underestimation of the cohesive energy. 
+
+	This trend was also confirmed by Ilawe \al when measuring the bulk modulus and cohesive energy of Palladium. \cite{Ilawe2015} PBE and PBE-D2 had similar errors of -14.4\% and -16.1\% respectively for the bulk modulus, whilst PBE-D3 under the Becke-Jonhson damping scheme\cite{BJ-Damp} gave the best results of all with a -3.4\% error. vdW-DF2 gave a a rather severe error of -38.9\%. A similar trend is shown in the cohesive energy, where vdW-DF2 vastly underestimates, and PBE-D2 and PBE-D3 both overestimate by the same amount. Ironically, plain PBE actually was the best performer for the coshesive energy, though undoubtly for the wrong reasons. 
+
+
+
+
+
+	\subsection{Noble Gasses}
+	% D2/D3 I think, maybe find some more anyway?
+	% Chen2012 has D2 and vdw-DF2 for adsorption of noble gasses to heavy metals 
+
+
+
+	\subsection{Selection of the Correct Exchange Functional}
+	%Grimme paper and moellmann for D3 only, 4144
+	Selecting the correct dispersion correction for the task at hand is only part of the problem. If the correction exchange-correlation functional is not selected for the corresponding dispersion correction improvements may be lackluster at best, or even worse than without the correction. This is a very complex topic, and there are many different combinations for a wide variety of use cases, so obviously only a small fraction will be shown here. 
+	Hujo and Grimme compared different functionals paired with the DFT-D3 and VV10 dispersion corrections.\cite{Grimme2011-D3-VV10-Compairons} The S66\cite{s66a,s66b} and S22\cite{s22} test sets were used for benchmarking as they contain hightly accurate data designed for dispersion based systems. 
+
+	Although all the functionals tested gave good results of $\leq 0.50$ \kcal, there was much diversity amongst them, as shown in table \ref{tab:VV10D3}. revPBE0-VV10 performed the best in the S22 test set, with a mean absolute deviation of 0.18 \kcal, comapred to B3LYP-VV10 which had a MAD of 0.48 \kcal. This was echoed in the S66 test set, where revPBE-VV10 had under half the MAD of B3PW91-PBE. The same applies for DFT-D3, although it is slightly less extreme, with a maximum difference of 0.22\kcal between different functionals. 
+	In the same paper it was shown that under the GMTKN30 test set, VV10 when paired with revPBE performed worse than revPBE on its own. This is due to overbinding of revPBE without a dispersion correction, and so when one is applied it becomes even worse. 
+
+	\begin{figure*}
+		\label{tab:VV10D3}
+		\centering
+		\begin{tabular}[]{c|c c c c | c c}
+		Functional & \multicolumn{4}{c}{Adsorption Energy / eV \cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA \cite{VV10-Adsorption}}\\
+			\hline
+			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & MAE & Ag (1 1 1) &  Ordering y/n\\
+		PBE	& 0.08 & 0.08 & 0.08 & 0.57 & 3.44 & n\\
+		PBE-D2 & 0.86 & --- & 1.35 & --- & --- & ---\\
+		PBE-D3 & 0.99 & 0.74 & 0.86 & 0.19 & 2.97 & n\\
+		PBE-D3(ABC) & 0.79 & 0.61 & 0.73 & 0.08 & --- & ---\\
+		PBE-rVV10 & --- & --- & --- & --- & 3.02 & n \\
+		SCAN-rVV10 & 0.74 & 0.68 & 0.73 & 0.04 & 2.98 & y\\
+		PBE-XDM & 0.54 & 0.58 & 0.61 & 0.10 & --- & ---\\
+		B86bPBE-XDM & 0.59 & 0.68 & 0.65 & 0.04 & 3.03 & y\\
+		Experimental & 0.69 $\pm$ 0.04 & 0.68 $\pm$ 0.05 & 0.65 $\pm$ 0.03 & --- & 3.04 $\pm$ 0.02 & ---
+
+		\end{tabular}
+	\end{figure*}
+
 	\newpage
 	\printbibliography
-\end{document}
+	\end{document}
 
