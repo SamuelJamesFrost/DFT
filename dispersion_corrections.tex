@@ -71,6 +71,13 @@
 	\section{Overview of Methods}
 	\subsection{Semi-empirical Corrections}
 	\label{sec:semi-empirical}
+	% just a correciton term(s) tacked on to the end of the energy for whatever functional is being used, uses fitting data -> problem of unusual systems not being realistic overfitting, talk about that machine learning paper
+	Semi-empirical, also known as semi-classical, corrections take the form of the sum of pairwise attraction between induvidual atoms, $i$ and $j$, in a system.
+	\begin{align}
+		E_\text{disp} = \sum \frac{C^{i,j}_n}{R^n}\\ n = 6, 8, 10
+	\end{align}
+	$C^{i,j}_n$ depends on the atoms in the system, this constant is derived from fitting to large data sets, this is where the \emph{empiricism} comes from. This helps to make it quite fast, basically keeping the computation time the same, when compared with other methods such as those in section \ref{sec:NL}. Another consequence is that the quality of the correction is determined by the data it's fit to, this can cause problems when systems which differ from the training data are used. \cite{Grimme2010} Although alternative training data can be used for more specific purposes\cite{D3-ABC}, this does exist for every case. These corrections are just added to the plain DFT functional.
+
 	\subsubsection{DFT-D2}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
 	the successor to his more limited DFT-D method. The main setback of this original method was the narrow scope of the atoms as it could model, only Hydrogen and Carbon through to Neon. This, paired with very large inconsistencies for thermochemical calculations (e.g. energy of atomisation) made it a very limited method in dire need of improvement for it to become widespread.
@@ -120,7 +127,7 @@
 
 	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
 
-	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see section 3.
+	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see sections \ref{sec:NL} \& \ref{sec:XDM}
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
 	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
@@ -151,12 +158,22 @@
 		C_8^{AB} &= 3C_6^{AB} \sqrt{Q_A Q_B}\\
 		Q_A  &= \sqrt{Z_A} \frac{\langle r_A^4 \rangle}{\langle r_A^2 \rangle}
 	\end{align}
-	Where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$ is the highest order dispersion coefficient calculated however, $C_{10}$ is ignored and instead absorbed into the $s_8$ scaling factor.
+	Where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$, the quadrupole term, is the highest order dispersion coefficient calculated however, $C_{10}$, the octupole term, is ignored and instead absorbed into the $s_8$ scaling factor. These higher order terms help to account for longer range forces? 
+
+	Two different damping schemes are usually employed for DFT-D3. The original DFT-D3 method used a damping function from Chai and Head-Gordon \cite{Chai-Gordon-Damp}, where the dispersion energy goes to zero at short distances. 
+	This takes the form of 
+	\begin{align}
+		f^n_\text{damp,CHG}(R) = \frac{1}{1 + 6(R/(s_{r,n}R_0^{AB}))^{a_n}} 
+	\end{align}
+	where $a_6 = 14$ and $a_8 = 16$, both $s_{r,6}$ and $s_{r,8}$ depend on the functional. 
+	
+	This method was soon replaced with the Becke-Johnson (BJ) damping function\cite{BJ-Damp} seen in equation \ref{eq:BJ-Damp}, where $R_0 = \sqrt{C_8^{AB}/C_6^{AB}}$. The BJ damping function instead goes to a non-zero value as $R \rightarrow 0$. Although they both act the same at long distances, at short distances CHG would damp too much, causing an artifical repuslive force, this can lead to bond lengths even longer than plain DFT. As the BJ damping scheme does not go to zero it avoids creating this repuslive force, as such the default DFT-D3 damping scheme is BJ unless otherwise stated.
 
 
 
 	\subsection{Non-Local Correlation Functionals}
-	Unlike the semi-empirical correction terms introduced in section 2, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
+	\label{sec:NL}
+	Unlike the semi-empirical correction terms introduced in section \ref{sec:semi-empirical}, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including points thought to be too far away in space to have any affect allows them to account for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very cumbersome, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
 	\begin{align}
 		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{L} + E_\text{C}^\text{NL}
 	\end{align} 
@@ -232,6 +249,7 @@
 	% Compared use/citations on web of sciences in  conclusion to how widespread it is i.e. if it were so great why don't more people use it 
 
 	\subsection{Exchange-Dipole Moment Model}
+	\label{sec:XDM}
 	Becke and Johnson proposed a model\cite{XDM-Original} in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the amount to which the hole depletes the probability of finding another electron with the same spin at point $\vec{r}'$ is given by 
 	\begin{align}
 		h_{X,\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
@@ -311,6 +329,7 @@
 	\end{align}
 	Where a novel damping functiona developed by Becke and Johnson is being used \cite{BJ-Damp}
 	\begin{align}
+		\label{eq:BJ-Damp}
 		f^n_\text{damp,BJ} (R) = \frac{R^n}{R^n + (a_1 R_0 + a_2)^n}\\
 		R_0 = \frac{1}{3} \left( \sqrt{\frac{C_8^{AB}}{C_6^{AB}}} + \sqrt{\frac{C_{10}^{AB}}{C_8^{AB}}}
 		+ \sqrt[^4]{\frac{C_{10}^{AB}}{C_6^{AB}}} \right)
@@ -355,7 +374,7 @@
 	\subsection{Adsorption to Metal Surfaces}
 	Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM perfermed quite well, with its values for gold and silver being within the uncertainty, however copper was underestimated by $0.06$ eV outside the margin of uncertainty, giving an overal MAE of  $0.04$ eV, still a great improvement on PBE-XDM's $0.10$ eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. 
 
-	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hybrides in the fitting data, and that by changing the training data a more accurate answer can be achieved. \cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievment. 
+	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hydrides in the fitting data, and that by changing the training data a more accurate answer can be achieved. \cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievment.
 
 	Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. 
 
@@ -411,22 +430,35 @@
 	\begin{figure*}
 		\label{tab:VV10D3}
 		\centering
-		\begin{tabular}[]{c|c c c c | c c}
-		Functional & \multicolumn{4}{c}{Adsorption Energy / eV \cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA \cite{VV10-Adsorption}}\\
-			\hline
-			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & MAE & Ag (1 1 1) &  Ordering y/n\\
-		PBE	& 0.08 & 0.08 & 0.08 & 0.57 & 3.44 & n\\
-		PBE-D2 & 0.86 & --- & 1.35 & --- & --- & ---\\
-		PBE-D3 & 0.99 & 0.74 & 0.86 & 0.19 & 2.97 & n\\
-		PBE-D3(ABC) & 0.79 & 0.61 & 0.73 & 0.08 & --- & ---\\
-		PBE-rVV10 & --- & --- & --- & --- & 3.02 & n \\
-		SCAN-rVV10 & 0.74 & 0.68 & 0.73 & 0.04 & 2.98 & y\\
-		PBE-XDM & 0.54 & 0.58 & 0.61 & 0.10 & --- & ---\\
-		B86bPBE-XDM & 0.59 & 0.68 & 0.65 & 0.04 & 3.03 & y\\
-		Experimental & 0.69 $\pm$ 0.04 & 0.68 $\pm$ 0.05 & 0.65 $\pm$ 0.03 & --- & 3.04 $\pm$ 0.02 & ---
-
+		\begin{tabular}[]{c|c c c c}
 		\end{tabular}
 	\end{figure*}
+
+	%4886
+	\section{Conclusion}
+	% Which functional to select? Make a table about each functional, maybe what the future holds? Adjustments to be made?
+	% Gaps in research? limitation of D3 style ones, more research for more general 
+	% Citations
+	%5115
+	From all this it is evident that dispersion corrections in density functional theory is an active and constantly evolving field. It only takes a quick search on "Web of Science" to find over 15,000 papers related to the topic. As computing power continues to accelerate more cumbersome, but more accurate, methods may make their way to the forefront.
+
+	Despite its popularity however, many problems still remain. As opposed to properties like energy and structure (e.g. bond length), less significant properties like phonon dispersion and elastic constants are in need of more research to test many corrections abilities. The same applies to systems under distress, such as those under high pressure, where some corrections (especially those of the semi-empirical kind) may begin to break down. Modelling systems including solvents is simply too complicated for these methods, as such new methods must be developed. 
+
+	As a convinience, a table containing useful properties of each correction mentioned in this review has been compiled in table \ref{tab:conc}. 
+
+	\begin{table}
+		\label{tab:conc}
+		\begin{tabular}{c|c c}
+			& Complexity & Citations \\
+			\hline
+			D2 & low & 17,918\\
+			D3 & low & 21,599\\
+			vdW-DF2 & high & 1,752\\
+			VV10 & medium & 701\\
+			XDM & high/medium & 919\\
+		\end{tabular}
+	\end{table}
+
 
 	\newpage
 	\printbibliography
