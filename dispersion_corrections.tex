@@ -32,7 +32,8 @@
 		\end{center}
 		\centering\noindent\rule{0.9\textwidth}{0.4pt}
 		\begin{abstract}
-			{\lipsum[5]}
+			%5332
+			Density functional theory (DFT) currently cannot account for long-range electron correlation, otherwise known as dispersion forces. These forces are paramount to nearly all chemical systems, as such, many corrections have been developed to remedy this. This review will focus on the theory of some of the more widely used corrections: semi-empirical/classical (DFT-D2 \& D3), non-local density functionals (vdW-DF2, VV10), and XDM. It will compare the perfomance of these corrections in typical settings such as the calculation of common physical properties and adsorption to metals, along with specialised test sets designed to measure the appropriateness of dispersion corrections. This review will also focus on some of the strengths and weaknesses of each correction and help the reader to choose a correction based on the use case. Although there is much work to be done, dispersion corrections provide a large improvement to DFT, in some cases even lining up with experimental data.
 		\end{abstract}
 		\centering\noindent\rule{0.9\textwidth}{0.4pt}\\
 		\vspace{1cm}
@@ -62,11 +63,6 @@
 	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{vdWImportance-Kaplan2006} The LDA functional assumes that the exchange correlation energy depends on the local electron density at a single point in space only, which is modelled as a uniform electron gas.\cite{LDA-Kohn1965} The slightly more complex GGA method uses both the local electron density at each point, but also its \emph{gradient}, giving better results.\cite{GGA-Becke1988}\cite{GGA-Perdew1986} A consequence of this is that only local (i.e. short range) contributions to the exchange correlation energy are considered. Therefore there is a lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
 
 	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of disperion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
-	
-	%%%%%%%%%%%%%%%%%%%% NOTES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	%%%%    MAYBE TALK ABOUT THE UNIFORM ELECTRON GAS AND HOW 
-	%%%%    WE HAVE AN EXACT EXPRESSION FOR IT -> LDA WORKS FOR IT 
-	%%%% https://mattermodeling.stackexchange.com/questions/1320/can-dft-be-exact-in-the-limit-of-the-uniform-electron-gas 
 
 	\section{Overview of Methods}
 	\subsection{Semi-empirical Corrections}
@@ -76,7 +72,7 @@
 	\begin{align}
 		E_\text{disp} = \sum \frac{C^{i,j}_n}{R^n}\\ n = 6, 8, 10
 	\end{align}
-	$C^{i,j}_n$ depends on the atoms in the system, this constant is derived from fitting to large data sets, this is where the \emph{empiricism} comes from. This helps to make it quite fast, basically keeping the computation time the same, when compared with other methods such as those in section \ref{sec:NL}. Another consequence is that the quality of the correction is determined by the data it's fit to, this can cause problems when systems which differ from the training data are used. \cite{Grimme2010} Although alternative training data can be used for more specific purposes\cite{D3-ABC}, this does exist for every case. These corrections are just added to the plain DFT functional.
+	$C^{i,j}_n$ depends on the atoms in the system, this constant is derived from fitting to large data sets, this is where the \emph{empiricism} comes from. This helps to make it quite fast, basically keeping the computation time constant, when compared with other methods such as those in section \ref{sec:NL}. Another consequence is that the quality of the correction is determined by the data it's fit to, this can cause problems when systems which differ from the training data are used. \cite{Sato2009, Grimme2010} Although alternative training data can be used for more specific purposes\cite{D3-ABC}, this does exist for every case. These corrections are just added to the plain DFT functional.
 
 	\subsubsection{DFT-D2}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
@@ -110,29 +106,27 @@
 			width=200pt,
 			xlabel = \(R_{i,j}\),
 			ylabel = {\(f_\text{damp}(R_{i,j})\)},
+			xticklabels={,$0$ , , , , ,D}
 			]
 			\addplot[
 			  color=blue,
-			  domain=0:2,
+			  domain=0:1,
 			  samples=50,
 			  width=5pt,
 			  ]
-			  {1/(1+exp(-10*x+10))};
+			  {1/(1+exp(-18*x+10))};
 			\end{axis}
 		\end{tikzpicture}
-		\caption{The Fermi damping function which ensures that the van der Waals correction energy doesn't grow too large as $R_{i,j} \rightarrow 0$}
+		\caption{The Fermi damping function which ensures that the van der Waals correction energy doesn't grow too large as $R_{i,j} \rightarrow 0$. Where D is a great distance such that dispersion interactions will dominate.}
 		\label{fig:Fermi}
 	\end{figure}
 	Here, $R_r$ is the sum of the atomic van der Waals radii of the two atoms, which is derived from Restricted Open-shell Hartree-Fock calculations, in DFT-D2 $d = 20$, a small value compared to DFT-D, giving stronger corrections at intermediate distances. 
 
 	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
 
-	These constants are through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see sections \ref{sec:NL} \& \ref{sec:XDM}
+	These constants are derived through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see sections \ref{sec:NL} \& \ref{sec:XDM}
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
-	\color{red}talk about the dashed line fig 2 from grimme's review paper \color{black}
-
-	\emph{Maybe talk about empiricism more}
 
 
 	\subsubsection{DFT-D3}
@@ -167,7 +161,7 @@
 	\end{align}
 	where $a_6 = 14$ and $a_8 = 16$, both $s_{r,6}$ and $s_{r,8}$ depend on the functional. 
 	
-	This method was soon replaced with the Becke-Johnson (BJ) damping function\cite{BJ-Damp} seen in equation \ref{eq:BJ-Damp}, where $R_0 = \sqrt{C_8^{AB}/C_6^{AB}}$. The BJ damping function instead goes to a non-zero value as $R \rightarrow 0$. Although they both act the same at long distances, at short distances CHG would damp too much, causing an artifical repuslive force, this can lead to bond lengths even longer than plain DFT. As the BJ damping scheme does not go to zero it avoids creating this repuslive force, as such the default DFT-D3 damping scheme is BJ unless otherwise stated.
+	This method was soon replaced with the Becke-Johnson (BJ) damping function\cite{BJ-Damp} seen in equation \ref{eq:BJ-Damp}, where $R_0 = \sqrt{C_8^{AB}/C_6^{AB}}$. The BJ damping function instead goes to a non-zero value as $R \rightarrow 0$. Although they both act the same at long distances, at short distances CHG would damp too much, causing an artifical repuslive force, this can lead to bond lengths even longer than plain DFT. As the BJ damping scheme does not go to zero it avoids creating this repuslive force, as such the default DFT-D3 damping scheme is BJ unless otherwise stated.\cite{D3-Damp}
 
 
 
@@ -192,6 +186,7 @@
 
 
 	\subsubsection{VV10}
+	\label{sec:VV10}
 	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their method from the previous year, VV09, which was based on Dion \al's vdW-DFT1 method.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
 	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011} 
 
@@ -250,7 +245,7 @@
 
 	\subsection{Exchange-Dipole Moment Model}
 	\label{sec:XDM}
-	Becke and Johnson proposed a model\cite{XDM-Original} in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the amount to which the hole depletes the probability of finding another electron with the same spin at point $\vec{r}'$ is given by 
+	Working on the same principle as the methods in section: \ref{sec:semi-empirical}, the only difference being the derivation of the $C_n$ constants, Becke and Johnson proposed a model\cite{XDM-Original} in which the cause of dispersion interactions comes from an exchange-hole induced dipole moment.\cite{XDM-dipole,XDM-HF,XDM-HigherOrder} The exchange hole, otherwise known as a Fermi hole, originates from the Pauli exclusion principle, and stops two electrons of the same spin, $\sigma$, from occupying the same space. Thus there is an area around an electron where there is a zero probability of there being another electron. If there is an electron of spin $\sigma$ at point $\vec{r}$, then the amount to which the hole depletes the probability of finding another electron with the same spin at point $\vec{r}'$ is given by 
 	\begin{align}
 		h_{X,\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
 										\phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r}')
@@ -315,7 +310,7 @@
 	\begin{align}
 		E_\text{disp} = -\frac{C_6}{R^6}
 	\end{align}
-	This is same principle as the methods mentioned in section 2, but with a different derivation of the $C_6$ constant, which is written as
+	This is same principle as the methods mentioned in section \ref{sec:semi-empirical}, but with a different derivation of the $C_6$ constant, which is written as
 	\begin{align}
 		C_6^{AB} = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}
 	\end{align} 
@@ -338,21 +333,15 @@
 	
 	The attentive reader will notice that unlike previous methods mentioned, XDM uses no fitting of parameters. This makes it very theoretically pure. This also makes XDM a good candidate for studying unusual edge case systems, which other highly empirical methods like those in section 2 will fail. 
 
-
-	%*************** SHOULD MAYBE REORDER THE PAPER TO HAVE APPLICATIONS AT THE END, AND JUST HAVE IT BE DIFFERENT KINDS I.E. ADSORPTION TO METAL SURFACES, THAT WAY THERE'S NO REPEPTITION AND WE CAN COMPARE THINGS BETTER, CONSIDER!!!
-
 	\section{Perfomance and Application}
 	\subsection{Test Sets}
-	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section 3.1.1), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in figure \ref{fig:VV10S66}.
+	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section \ref{sec:VV10}), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in table \ref{tab:VV10S66}.
 
-	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section 3.1.1, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
+	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section \ref{sec:VV10}, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
 	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
 
-	Although the focus of this paper is on van der Waals interactions, that is not a functional's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
-
-	\begin{figure*}
+	\begin{table*}
 		\centering
-		\label{VV10S66}
 		\begin{tabular}[]{c|c c c c c}
 			& vdW-DF2 & VV10 & LC-VV10 & $\omega$B97X-D & M06-2X\\
 			\hline
@@ -365,10 +354,15 @@
 			& \multicolumn{5}{c}{Mixed Behaviour Systems}\\
 			MAE & 0.49 & 0.15 & 0.17 & 0.20 & 0.26\\
 			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
+			& \multicolumn{5}{c}{Total}\\
+			MAE & 0.48 & 5.1 & -0.9 & 6.9 & -5.8\\
+			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
 		\end{tabular}
-		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in Ref \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MPE is the mean absolute percentage error. }
-		\label{fig:VV10S66}
-	\end{figure*}
+		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in references \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MAPE is the mean absolute percentage error. }
+		\label{tab:VV10S66}
+	\end{table*}
+
+	Although the focus of this paper is on van der Waals interactions, that is not DFT's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
 
 
 	\subsection{Adsorption to Metal Surfaces}
@@ -376,11 +370,11 @@
 
 	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hydrides in the fitting data, and that by changing the training data a more accurate answer can be achieved. \cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievment.
 
-	Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. 
+	Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. The compiled data for both of these papers can be seen in table \ref{tab:adsorption}.
 
 	This data emphasises that pairing the dispersion with the correct functional must not be overlooked, and can severly affect an experiment. 
 
-	\begin{figure*}
+	\begin{table*}
 		\centering
 		\begin{tabular}[]{c|c c c c | c c}
 		Functional & \multicolumn{4}{c}{Adsorption Energy / eV \cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA \cite{VV10-Adsorption}}\\
@@ -395,9 +389,10 @@
 		PBE-XDM & 0.54 & 0.58 & 0.61 & 0.10 & --- & ---\\
 		B86bPBE-XDM & 0.59 & 0.68 & 0.65 & 0.04 & 3.03 & y\\
 		Experimental & 0.69 $\pm$ 0.04 & 0.68 $\pm$ 0.05 & 0.65 $\pm$ 0.03 & --- & 3.04 $\pm$ 0.02 & ---
-
 		\end{tabular}
-	\end{figure*}
+		\caption{Data for various dispersion corrections and their functionals for the adsorption energy of benzne to various coinage metals\cite{Christian2016-CoinageAdsorption}, and the adsorption to distance of benzene to silver, as well as whether the ordering of the adsorption distance to the other metals was correct or not \cite{VV10-Adsorption}}
+		\label{tab:adsorption}
+	\end{table*}
 
 
 	\subsection{Physical Properties}
@@ -413,26 +408,35 @@
 
 
 
-	\subsection{Noble Gasses}
+	%\subsection{Noble Gasses}
 	% D2/D3 I think, maybe find some more anyway?
 	% Chen2012 has D2 and vdw-DF2 for adsorption of noble gasses to heavy metals 
 
 
-
 	\subsection{Selection of the Correct Exchange Functional}
 	%Grimme paper and moellmann for D3 only, 4144
-	Selecting the correct dispersion correction for the task at hand is only part of the problem. If the correction exchange-correlation functional is not selected for the corresponding dispersion correction improvements may be lackluster at best, or even worse than without the correction. This is a very complex topic, and there are many different combinations for a wide variety of use cases, so obviously only a small fraction will be shown here. 
+	Selecting the correct dispersion correction for the task at hand is only part of the problem. If the correction exchange-correlation functional is not selected for the corresponding dispersion correction improvements may be lackluster at best, or even worse than without the correction. This is especially true of exchange functionals which are already overly attractive at a long range, such as revPBE. This is a very complex topic, and there are many different combinations for a wide variety of use cases, so obviously only a small fraction will be shown here. 
 	Hujo and Grimme compared different functionals paired with the DFT-D3 and VV10 dispersion corrections.\cite{Grimme2011-D3-VV10-Compairons} The S66\cite{s66a,s66b} and S22\cite{s22} test sets were used for benchmarking as they contain hightly accurate data designed for dispersion based systems. 
 
-	Although all the functionals tested gave good results of $\leq 0.50$ \kcal, there was much diversity amongst them, as shown in table \ref{tab:VV10D3}. revPBE0-VV10 performed the best in the S22 test set, with a mean absolute deviation of 0.18 \kcal, comapred to B3LYP-VV10 which had a MAD of 0.48 \kcal. This was echoed in the S66 test set, where revPBE-VV10 had under half the MAD of B3PW91-PBE. The same applies for DFT-D3, although it is slightly less extreme, with a maximum difference of 0.22\kcal between different functionals. 
+	Although all the functionals tested gave good results of $\leq 0.50$ \kcal, there was much diversity amongst them, as shown in table \ref{tab:VV10D3}. revPBE0-VV10 performed the best in the S22 test set, with a mean absolute deviation of 0.18 \kcal, comapred to B3LYP-VV10 which had a MAD of 0.48 \kcal. This was echoed in the S66 test set, where revPBE-VV10 had under half the MAD of B3PW91-PBE. The same applies for DFT-D3, although it is slightly less extreme, with a maximum difference of 0.22\kcal between different functionals. Whilst BLYP is the best performing functional for D3 in the S66 set, it is amongst the worst for VV10, reinforcing that there is no one-size-fits-all solution.
 	In the same paper it was shown that under the GMTKN30 test set, VV10 when paired with revPBE performed worse than revPBE on its own. This is due to overbinding of revPBE without a dispersion correction, and so when one is applied it becomes even worse. 
 
-	\begin{figure*}
-		\label{tab:VV10D3}
+	\begin{table}
 		\centering
 		\begin{tabular}[]{c|c c c c}
+					& \multicolumn{2}{c}{S22} & \multicolumn{2}{c}{S66}\\
+					& VV10 & D3 & VV10 & D3\\
+					\hline
+			B3LYP   & 0.48 & 0.31 & 0.48 & 0.32\\
+			B3PW91  & 0.45 & 0.47 & 0.50 & 0.33\\
+			BLYP    & 0.40 & 0.25 & 0.40 & 0.21\\
+			rPW86PBE& 0.37 & 0.30 & 0.35 & 0.35\\
+			revPBE  & 0.29 & 0.44 & 0.21 & 0.31\\
+			revPBE0 & 0.18 & 0.28 & 0.24 & 0.22\\
 		\end{tabular}
-	\end{figure*}
+		\caption{The mean absolute deviation (MAD) in \kcal of the using the S22 and S66 test sets from different functionals paired with either VV10 or D3 dispersion corrections from reference \cite{Grimme2011-VV10-LDA-GGA-Pairing}}
+		\label{tab:VV10D3}
+	\end{table}
 
 	%4886
 	\section{Conclusion}
@@ -440,27 +444,34 @@
 	% Gaps in research? limitation of D3 style ones, more research for more general 
 	% Citations
 	%5115
-	From all this it is evident that dispersion corrections in density functional theory is an active and constantly evolving field. It only takes a quick search on "Web of Science" to find over 15,000 papers related to the topic. As computing power continues to accelerate more cumbersome, but more accurate, methods may make their way to the forefront.
+	From all this it is evident that dispersion corrections in density functional theory is an active and constantly evolving field. It only takes a quick search on "Web of Science" to find over 15,000 papers related to the topic. As computing power continues to accelerate, more cumbersome, but more accurate, methods may make their way to the forefront.
 
-	Despite its popularity however, many problems still remain. As opposed to properties like energy and structure (e.g. bond length), less significant properties like phonon dispersion and elastic constants are in need of more research to test many corrections abilities. The same applies to systems under distress, such as those under high pressure, where some corrections (especially those of the semi-empirical kind) may begin to break down. Modelling systems including solvents is simply too complicated for these methods, as such new methods must be developed. 
+	Despite its popularity however, many problems still remain. As opposed to properties like energy and structure (e.g. bond length), less significant properties like phonon dispersion and elastic constants are in need of more research to test many corrections abilities. The same applies to systems under distress, such as those under high pressure, where some corrections (especially those of the semi-empirical kind) may begin to break down. Modelling systems including solvents is simply too complicated for current dispersion corrections, as such new methods must be developed. 
+
+	Despite it not often being the most accurate, nor consistent in foreign use cases, nor the most theoretically acceptable, DFT-D3 is the most cited dispersion correction in this review by far, with only its more primitive older sibling coming even close. It is fair to let the popularity of it speak for itself as an example to why it should be implimented. XDM, although the slowest of the group, is often the most accurate, providing great results in cases where others fail to pick up on more nuanced behaviour. VV10 strikes a middle ground, with decent speeds and good perfomance, usually managing to simulate subtle behaviour, whilst just missing out on accuracy. 
 
 	As a convinience, a table containing useful properties of each correction mentioned in this review has been compiled in table \ref{tab:conc}. 
 
 	\begin{table}
-		\label{tab:conc}
-		\begin{tabular}{c|c c}
-			& Complexity & Citations \\
+		\begin{tabular}{c|c c c}
+			& Complexity & Empiricism & Citations \\
 			\hline
-			D2 & low & 17,918\\
-			D3 & low & 21,599\\
-			vdW-DF2 & high & 1,752\\
-			VV10 & medium & 701\\
-			XDM & high/medium & 919\\
+			D2 & low & high & 17,918\\
+			D3 & low & high & 21,599\\
+			vdW-DF2 & high & medium  & 1,752\\
+			VV10 & medium & medium & 701\\
+			XDM & high/medium & none & 919\\
 		\end{tabular}
+		\caption{Basic properties of different dispersion corrections, complexity and empiricism are a qualitative measure based on the author's knowledge. Citations are the total number of citations taken from the original paper on "Web of Science" as of the publishing date.}
+		\label{tab:conc}
 	\end{table}
 
 
 	\newpage
 	\printbibliography
 	\end{document}
+
+	%How XDM differs from SE -> C6 derivation
+	%Table of properties -> empircism
+	%pairing i.e. XDM + B86bPBE
 
