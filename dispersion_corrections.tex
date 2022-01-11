@@ -33,7 +33,7 @@
 		\centering\noindent\rule{0.9\textwidth}{0.4pt}
 		\begin{abstract}
 			%5332
-			Density functional theory (DFT) currently cannot account for long-range electron correlation, otherwise known as dispersion forces. These forces are paramount to nearly all chemical systems, as such, many corrections have been developed to remedy this. This review will focus on the theory of some of the more widely used corrections: semi-empirical/classical (DFT-D2 \& D3), non-local density functionals (vdW-DF2, VV10), and XDM. It will compare the perfomance of these corrections in typical settings such as the calculation of common physical properties and adsorption to metals, along with specialised test sets designed to measure the appropriateness of dispersion corrections. This review will also focus on some of the strengths and weaknesses of each correction and help the reader to choose a correction based on the use case. Although there is much work to be done, dispersion corrections provide a large improvement to DFT, in some cases even lining up with experimental data.
+			Density functional theory (DFT) currently cannot account for long-range electron correlation, otherwise known as dispersion forces. These forces are paramount to nearly all chemical systems, as such, many corrections have been developed to remedy this. This review will focus on the theory of some of the more widely used corrections: semi-empirical/classical (DFT-D2 \& D3), non-local density functionals (vdW-DF2, VV10), and XDM. It will compare the performance of these corrections in typical settings such as the calculation of common physical properties and adsorption to metals, along with specialised test sets designed to measure the appropriateness of dispersion corrections. This review will also focus on some of the strengths and weaknesses of each correction and help the reader to choose a correction based on the use case. Although there is much work to be done, dispersion corrections provide a large improvement to DFT, in some cases even lining up with experimental data.
 		\end{abstract}
 		\centering\noindent\rule{0.9\textwidth}{0.4pt}\\
 		\vspace{1cm}
@@ -43,61 +43,63 @@
 
 	
 	\section{Introduction}
-	The electronic structure of a molecule, or system of molecules, is an important property of much interest to scientists of all fields. As such many methods have been devised to calculate these structures to help aid scientists in their research of complicated systems, where direct measurement of certain properties may not be practical or even possible. One of these is methods is DFT, which uses electron density to calculate the energy at each nuclear position. A geometry optimisation can then be run which will find the minimum energy configuration. \cite{Parr1989} This method can be used to find all sorts of useful properties, such as molecular geometries, thermodynamic properties, reaction barriers, etc.\cite{Jones2015}
+	The electronic structure of a molecule, or system of molecules, is an important property of much interest to scientists of all fields. As such many methods have been devised to calculate these structures to help aid scientists in their research of complicated systems, where direct measurement of certain properties may not be practical or even possible. One of these is methods is DFT, which uses electron density to calculate the energy at each nuclear position. A geometry optimisation can then be run which will find the minimum energy configuration.\cite{Parr1989} This method can be used to find all sorts of useful properties, such as molecular geometries, thermodynamic properties, reaction barriers, etc.\cite{Jones2015}
 
-	It may seem that the most important part of a system of molecules is the intramolecular covalent and ionic bonds. Whilst they do play a large role in determining the structure of the molecule these do not paint the full picture. Fluctuations of electron density cause pockets of slight negative and positive charge, this has a knock on effect to neighbouring electrons which causes both inter and intramolecular attraction, along with further fluctuations in electron density. This phenomenom is known as van der Waals (also London dispersion) forces; despite being incredibly weak (many orders of magnitude weaker than covalent bonds), it plays an important role in chemistry. \cite{vdWImportance-Kaplan2006}
+	It may seem that the most important part of a system of molecules is the intramolecular covalent and ionic bonds. Whilst they do play a large role in determining the structure of the molecule these do not paint the full picture. Fluctuations of electron density cause pockets of slight negative and positive charge, this has a knock on effect to neighbouring electrons which causes both inter and intramolecular attraction, along with further fluctuations in electron density. This phenomenon is known as van der Waals (also London dispersion) forces; despite being incredibly weak (many orders of magnitude weaker than covalent bonds), it plays an important role in chemistry.\cite{vdWImportance-Kaplan2006}
 	DFT methods have previously failed in considering these crucial van der Waals forces at long ranges, making them appear much weaker than in reality. Whilst this may not be a problem for basic solid state physics, where almost purely ionic crystals are concerned, it is a major problem in other areas of science. A lack of proper London dispersion forces causes a multitude of problems: DNA, which is held together with hydrogen bonds, will lack the strength to keep its form and as such will unwind; polar molecules, such as those commonly found in biology and organic chemistry, will have their thermodynamic properties miscalculated; molecules adsorping to metal surfaces will adsorp to the wrong site, and give weaker binding energies than in actuality; complicated molecular crystals will pack incorrectly, giving the wrong optimised geometry.
 	With this in mind, it is obvious that DFT is in dire need of a solution, but before one can find a solution one needs to actually find the problem. 
 
-	The total electronic ground state energy of an atom, molecule, or ion, can be written as follows
-	\begin{align}
-		E_\text{tot} &= E_T + E_V + E_J + E_X + E_C
+	The total electronic ground state energy of an atom, molecule, or ion, can be written as follows:
+	\begin{align}\label{eq:Etot}
+		E_\text{tot} &= E_T + E_V + E_J + E_X + E_C.
 	\end{align}
-	$E_T$ is the total kinetic energy of the electrons, and is always positive, $E_V$ is the total potential energy due to the attraction of the electron to the positive nuclear centre(s), this is also always negative. $E_J$ is the \emph{average} energy of the Coloumb repulsion between pairs of electrons, and is always positive, this doesn't paint the full picture however. 
-	It does not take into account the instantaneous influence of electrons on one another when they are in close proximity. Electrons will always try to repel each other, they will avoid each other, therefore the movements of one electron depends on the others, they are \emph{correlated}, this lowers the energy of the system as it reduces the repulsion between electrons. $E_J$ does not take this into account as it is only modelled as the electrons moving in the average potential field of all the other electrons, and therefore does not include induvidual correlation effects. 
+	In \eqref{eq:Etot}, $E_T$ is the total kinetic energy of the electrons, and is always positive, $E_V$ is the total potential energy due to the attraction of the electron to the positive nuclear centre(s), this is also always negative. $E_J$ is the \emph{average} energy of the Coulomb repulsion between pairs of electrons, and is always positive, this doesn't paint the full picture however. 
+	It does not take into account the instantaneous influence of electrons on one another when they are in close proximity. Electrons will always try to repel each other, they will avoid each other, therefore the movements of one electron depends on the others, they are \emph{correlated}, this lowers the energy of the system as it reduces the repulsion between electrons. $E_J$ does not take this into account as it is only modelled as the electrons moving in the average potential field of all the other electrons, and therefore does not include individual correlation effects. 
 	To fix this the negative $E_X$ and $E_C$ correction terms are introduced, and are often summed to make a single term dubbed the exchange correlation energy $E_{XC}$. 
-	$E_X$, the exchange energy, accounts for the much stronger correlated moton of electron sharing the same spin, caused by the Pauli exclusion principle, and removes the non-physical self repulsion terms included in $E_J$. $E_C$, the correlation energy, is much smaller and accounts for the weaker correlated motion of electrons with opposite spin. 
+	The exchange energy, $E_X$, accounts for the much stronger correlated motion of electron sharing the same spin, caused by the Pauli exclusion principle, and removes the non-physical self repulsion terms included in $E_J$. $E_C$, the correlation energy, is much smaller and accounts for the weaker correlated motion of electrons with opposite spin. 
 
 	It is the exchange correlation energy which represents van der Waals interactions between atoms and molecules, so its accurate calculation is vital to many systems.
-	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approxmiation)\cite{LDA-Kohn1965} and GGA (generalised gradient approximation)\cite{GGA-Becke1988,GGA-Perdew1986} (such as PBE\cite{PBE}). 
-	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{vdWImportance-Kaplan2006} The LDA functional assumes that the exchange correlation energy depends on the local electron density at a single point in space only, which is modelled as a uniform electron gas.\cite{LDA-Kohn1965} The slightly more complex GGA method uses both the local electron density at each point, but also its \emph{gradient}, giving better results.\cite{GGA-Becke1988}\cite{GGA-Perdew1986} A consequence of this is that only local (i.e. short range) contributions to the exchange correlation energy are considered. Therefore there is a lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
+	The calculation of the exchange correlation energy is a formidable task however, and thus many approximation have to be made. This has lead to DFT methods such as LDA (local-density approximation)\cite{LDA-Kohn1965} and GGA (generalised gradient approximation)\cite{GGA-Becke1988,GGA-Perdew1986} (such as PBE\cite{PBE}). 
+	These type of functionals give semi-accurate results in solid state physics, where dispersion interactions are less important and normally of shorter range, as opposed to bio-organic molecules where dispersion forces play a key role over long distances (e.g. DNA).\cite{vdWImportance-Kaplan2006} The LDA functional assumes that the exchange correlation energy depends on the local electron density at a single point in space only, which is modelled as a uniform electron gas.\cite{LDA-Kohn1965} The slightly more complex GGA method uses both the local electron density at each point, but also its \emph{gradient}, giving better results.\cite{GGA-Becke1988,GGA-Perdew1986} A consequence of this is that only local (i.e. short range) contributions to the exchange correlation energy are considered. Therefore there is a lack of long range electron correlation, which means that long range van der Waals forces are not considered. This causes systems to underbind, meaning weaker van der Waals interactions are simulated, which obviously gives incorrect results. 
 
-	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of disperion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
+	To fix this shortcoming of DFT, many solutions have been devised over the recent years. This literature review will focus on two main types of dispersion correction: the semi-empirical correction term, and the non-local density functional. The former applies a correction term, which is derived through fitting to empirical data, to a given LDA or GGA functional. This correction term helps to add on longer range forces to the energy already calculated by the functional. The calculation of this correction term does not change the scaling factor of the functional, and as such, the semi-empirical correction term methods are a very cheap fix. The latter is a different type of functional entirely. It relies only on the electron density, and considers \emph{every point in space}, and as such are dubbed non-local density functionals. As electron correlation can affect electrons on the other side of a molecule this methods helps to ensure that every fluctuation is considered.
 
 	\section{Overview of Methods}
 	\subsection{Semi-empirical Corrections}
 	\label{sec:semi-empirical}
-	% just a correciton term(s) tacked on to the end of the energy for whatever functional is being used, uses fitting data -> problem of unusual systems not being realistic overfitting, talk about that machine learning paper
-	Semi-empirical (also known as semi-classical) corrections take the form of the sum of pairwise attraction between induvidual atoms $i$ and $j$, in a system of $N$ atoms. Giving the energy due to dispersion interactions as 
+	Semi-empirical (also known as semi-classical) corrections take the form of the sum of pairwise attraction between individual atoms $i$ and $j$, in a system of $N$ atoms. Here, the energy due to dispersion interactions is given as
 	\begin{align}
-		E_\text{disp} = \sum_{i=1}^{N-1} \sum_{j+1}^N \frac{C^{i,j}_6}{R^6}
+		E_\text{disp} = \sum_{i=1}^{N-1} \sum_{j+1}^N \frac{C^{i,j}_6}{R^6},
 	\end{align}
-	Where $R$ is the distance between $i$ and $j$ and the variable $C^{i,j}_6$ depends on the atoms in the system, this constant is derived from fitting to large data sets, this is where the \emph{empiricism} comes from. This helps to make it quite fast, basically keeping the computation time constant, when compared with other methods such as those in section \ref{sec:NL}. Another consequence is that the quality of the correction is determined by the data it's fit to, this can cause problems when systems which differ from the training data are used. \cite{Sato2009, Grimme2010} Although alternative training data can be used for more specific purposes\cite{D3-ABC}, this does exist for every case. These corrections are just added to the plain DFT functional.
+	where $R$ is the distance between $i$ and $j$ and the variable $C^{i,j}_6$ depends on the atoms in the system, this constant is derived from fitting to large data sets, this is where the \emph{empiricism} comes from. This helps to make it quite fast, basically keeping the computation time constant, when compared with other methods such as those in section \ref{sec:NL}. Another consequence is that the quality of the correction is determined by the data it's fit to, this can cause problems when systems which differ from the training data are used.\cite{Sato2009, Grimme2010} Although alternative training data can be used for more specific purposes\cite{D3-ABC}, this does exist for every case. These corrections are just added to the plain DFT functional.
 
 	\subsubsection{DFT-D2}
 	In 2006 Stefan Grimme published DFT-D2\cite{Grimme2006}, 
 	the successor to his more limited DFT-D method. The main setback of this original method was the narrow scope of the atoms as it could model, only Hydrogen and Carbon through to Neon. This, paired with very large inconsistencies for thermochemical calculations (e.g. energy of atomisation) made it a very limited method in dire need of improvement for it to become widespread.
 
-	The basis of the DFT-D2 dispersion correction is in the pairwise attraction between distinct atoms $i$ and atoms $j$ for all $N$ atoms in the system. \cite{Grimme2006}
+	The basis of the DFT-D2 dispersion correction is in the pairwise attraction between distinct atoms $i$ and atoms $j$, for all $N$ atoms in the system.\cite{Grimme2006}
+    Here, the dispersion energy is defined as
 	\begin{align} \label{eq:D2}
-	E_{\rm disp} \defeq -s_6 \sum^{N-1}_{i=1} \sum^N_{j=i+1} \frac{C^{i,j}_{6}}{R^6_{i,j}} f_{\rm damp}(R_{i,j})
+	E_{\rm disp} \defeq -s_6 \sum^{N-1}_{i=1} \sum^N_{j=i+1}  \frac{C^{i,j}_{6}}{R^6_{i,j}} f_{\rm damp}(R_{i,j}),
 	\end{align} 
 	\noindent
-	Where $C_6^{i,j}$ is the dispersion coefficient for the pair of atoms $i$ and $j$, $s_6$ is the scaling factor depending on the functional used, and $R_{i,j}$ is the interatomic separation. 
-	$C_6^{i,j}$ is calculated by the taking the geometric mean of the single atoms 
+	where $C_6^{i,j}$ is the dispersion coefficient for the pair of atoms $i$ and $j$, $s_6$ is the scaling factor depending on the functional used, and $R_{i,j}$ is the inter-atomic separation. 
+	$C_6^{i,j}$ is calculated by the taking the geometric mean of the single atoms:
 	\begin{align} \label{eq:C6ij}
-		C_6^{i,j} = \sqrt{C_6^i C_6^j}
+		C_6^{i,j} = \sqrt{C_6^i C_6^j}.
 	\end{align}
 	These atomic $C_6$ values are themselves computed through the PBE0 functional\cite{Grimme2011}. They are the same irrespective of the chemical environment, $C_6$ for carbon in methane is the same as in benzene, when obviously the dispersion interactions differ, this glaring hole is fixed in DFT-D3, where the chemical environment is considered.
+	The dispersion coefficient for $i$ is: 
 	\begin{align} \label{eq:C6i}
-		C_6^i = 0.05NI_i \alpha_i
+		C_6^i = 0.05NI_i \alpha_i.
 	\end{align}
-	$N$ is a scaling factor which depends on the row of the periodic table, taking on the value of the atomic mass of the element at the end of the row (e.g. for row 4 $N = 36$). $I$ is the first ionisation potential and $\alpha$ the static dipole polarisability, both of which are found with the PBE$0$ functional. These atomic dispersion coefficients are only available up to Xenon, a large improvement on DFT-D.
+	The constant $N$ is a scaling factor which depends on the row of the periodic table, taking on the value of the atomic mass of the element at the end of the row (e.g. for row 4 $N = 36$). $I$ is the first ionisation potential and $\alpha$ the static dipole polarisability, both of which are found with the PBE$0$ functional. These atomic dispersion coefficients are only available up to Xenon, a large improvement on DFT-D.
 
 	The Fermi damping function, $f_{\rm damp}(R_{i,j})$, which can be seen in figure: \ref{fig:Fermi}, ensures that the dispersion correction goes to zero as $R_{i,j}$ decreases. Without this damping function the $1/R_{i,j}^6$ term would grow too large as $R_{i,j} \rightarrow 0$, causing a singularity to form. This would in turn cause van der Waals interactions to be dwarf other forces, making molecules effectively stick together and never come apart.
-
+    
+    The Fermi damping function is defined as
 	\begin{align} \label{eq:damp}
-		f_{\rm damp}(R_{i,j}) \defeq \frac{1}{1+\exp(-d(R_{i,j}/R_r -1))}
+		f_{\rm damp}(R_{i,j}) \defeq \frac{1}{1+\exp(-d(R_{i,j}/R_r -1))}.
 	\end{align}
 
 	\begin{figure}
@@ -122,127 +124,120 @@
 	\end{figure}
 	Here, $R_r$ is the sum of the atomic van der Waals radii of the two atoms, which is derived from Restricted Open-shell Hartree-Fock calculations, in DFT-D2 $d = 20$, a small value compared to DFT-D, giving stronger corrections at intermediate distances. 
 
-	The scaling paramater $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
+	The scaling parameter $s_6$ and the constant Fermi damping function constant $d$ are both reliant on the functional used. They can both be changed however to fit different environment types if necessary, \emph{e.g.} one may use a different $s_6$ value for the adsorption to silver\cite{Schiavo2018} than one may use for modelling noble gasses.  
 
-	These constants are derived through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to innacurate results for systems which differ greatly from the training data.\cite{Sato2009}\cite{Grimme2010}\cite{Jones2015} For methods with little empiricism, see sections \ref{sec:NL} \& \ref{sec:XDM}
+	These constants are derived through least-squares fit optimisation against the energy deviations of a large set of highly accurate training systems, which leads some to believe it to be unacceptable from a theoretical standpoint. It can also lead to inaccurate results for systems which differ greatly from the training data.\cite{Sato2009,Grimme2010,Jones2015} For methods with little empiricism, see sections \ref{sec:NL} \& \ref{sec:XDM}
 
 	This dispersion correction, $E_{\rm disp}$, is simply added on to the Kohn-Sham energy obtained from the chosen functional.
 
 
 	\subsubsection{DFT-D3}
 	\label{sec:D3}
-	As mentioned earlier, DFT-D2 does not consider the chemical environment of the atom. Covalent bonds change the electronic structure, half occupied atomic orbitals become lower energy molecular orbitals. This lowers the polarisability of the atom, meaning a smaller $C_6$ constant is needed. DFT-D3 considers the coordination number of the atom, giving a more accurate result. \cite{Grimme2010} D3 also uses higher order correction terms (which correspond to a higher order distance factor too), however these generally stop at $C_8$, as any higher has shown to give unstable results for larger molecules.
+	As mentioned earlier, DFT-D2 does not consider the chemical environment of the atom. Covalent bonds change the electronic structure, half occupied atomic orbitals become lower energy molecular orbitals. This lowers the polarisability of the atom, meaning a smaller $C_6$ constant is needed. DFT-D3 considers the coordination number of the atom, giving a more accurate result.\cite{Grimme2010} D3 also uses higher order correction terms (which correspond to a higher order distance factor too), however these generally stop at $C_8$, as any higher has shown to give unstable results for larger molecules.
 
-	The coordination number for an atom $A$ in a molecule with $N$ atoms is given by 
+	The coordination number for an atom $A$ in a molecule with $N$ atoms is given by
 	{\small
 	\begin{align}
-		{\rm CN}^A = \sum_{B \neq A}^N \frac{1}{1 + e^{-16(4(R_A,{\rm cov} + R_B,{\rm cov})/(3R_{AB}) - 1)}}
+		{\rm CN}^A = \sum_{B \neq A}^N \frac{1}{1 + e^{-16(4(R_A,{\rm cov} + R_B,{\rm cov})/(3R_{AB}) - 1)}},
 	\end{align}}
-	where $R_A,{\rm cov}$ and $R_B,{\rm cov}$ is the covalent radius of $A$ and $B$ respecitively. $R_{AB}$ the distance between the two atoms.
+	where $R_A,{\rm cov}$ and $R_B,{\rm cov}$ is the covalent radius of $A$ and $B$ respectively. $R_{AB}$ the distance between the two atoms.
 
-	For the dispersion coefficient of a specific system the electric dipole polarisability $\alpha^A (i\omega)$ is calculated for the free atom as well as differently coordinated hydrides, $A_mH_n$ and $B_kH_l$ using the PBE38 hybrid functional.\cite{Grimme2011} An altered Casimir-Polder expression is used to find the new dispersion coefficient. 
-
+	For the dispersion coefficient of a specific system the electric dipole polarisability $\alpha^A (i\omega)$ is calculated for the free atom as well as differently coordinated hydrides, $A_mH_n$ and $B_kH_l$ using the PBE38 hybrid functional.\cite{Grimme2011} An altered Casimir-Polder expression is used to find the new dispersion coefficient:
 	\begin{align}
-		C_6^{AB} ({\rm CN}^A , {\rm CN}^B) =  \nonumber \\ \frac{3}{\pi} \int^{\infty}_0 \frac{1}{m} \left(\alpha^{A_m H_n}(i\omega) - \frac{n}{2} \alpha^{H_2} (i\omega) \right) \nonumber \\ \cross \frac{1}{k} \left(\alpha^{B_k H_l}(i\omega) - \frac{l}{2} \alpha^{H_2} (i\omega)\right) d\omega 
+		C_6^{AB} ({\rm CN}^A , {\rm CN}^B) =  \nonumber \\ \frac{3}{\pi} \int^{\infty}_0 \frac{1}{m} \left(\alpha^{A_m H_n}(i\omega) - \frac{n}{2} \alpha^{H_2} (i\omega) \right) \nonumber \\ \cross \frac{1}{k} \left(\alpha^{B_k H_l}(i\omega) - \frac{l}{2} \alpha^{H_2} (i\omega)\right) d\omega .
 	\end{align}
 	Here the $A_mH_n$ reference compound corresponds to the required coordination number of the atom $A$, the contribution of the hydrogen atoms to the polarisability is then subtracted from this. 
 	
-	These $C_6$ values are precomputed for every possible coordination number and atom pair. In the actual calculation the dispersion coefficient is evaluated as the Gaussian average of the previous values. This means that only the geometry of a molecule is required to calculate its dispersion coefficent. From here we can calculate the higher order $C_8$ dispersion coefficent.
+	These $C_6$ values are precomputed for every possible coordination number and atom pair. In the actual calculation the dispersion coefficient is evaluated as the Gaussian average of the previous values. This means that only the geometry of a molecule is required to calculate its dispersion coefficient. From here we can calculate the higher order $C_8$ dispersion coefficient:
 	\begin{align}
 		C_8^{AB} &= 3C_6^{AB} \sqrt{Q_A Q_B}\\
-		Q_A  &= \sqrt{Z_A} \frac{\langle r_A^4 \rangle}{\langle r_A^2 \rangle}
+		Q_A  &= \sqrt{Z_A} \frac{\langle r_A^4 \rangle}{\langle r_A^2 \rangle},
 	\end{align}
-	Where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$, the quadrupole term, is the highest order dispersion coefficient calculated however, $C_{10}$, the octupole term, is ignored and instead absorbed into the $s_8$ scaling factor.
+	where $\langle r_A^4 \rangle$ and $\langle r_A^2 \rangle$ are multipole-type expectation values and $Z_A$ is the atomic number of atom $A$. $C_8$, the quadrupole term, is the highest order dispersion coefficient calculated however, $C_{10}$, the octupole term, is ignored and instead absorbed into the $s_8$ scaling factor.
 
-	Two different damping schemes are usually employed for DFT-D3. The original DFT-D3 method used a damping function from Chai and Head-Gordon \cite{Chai-Gordon-Damp}, where the dispersion energy goes to zero at short distances. 
+	Two different damping schemes are usually employed for DFT-D3. The original DFT-D3 method used a damping function from Chai and Head-Gordon\cite{Chai-Gordon-Damp}, where the dispersion energy goes to zero at short distances. 
 	This takes the form of 
 	\begin{align}
-		f^n_\text{damp,CHG}(R) = \frac{1}{1 + 6(R/(s_{r,n}R_0^{AB}))^{a_n}} 
+		f^n_\text{damp,CHG}(R) = \frac{1}{1 + 6(R/(s_{r,n}R_0^{AB}))^{a_n}},
 	\end{align}
 	where $a_6 = 14$ and $a_8 = 16$, both $s_{r,6}$ and $s_{r,8}$ depend on the functional. 
 	
-	This method was soon replaced with the Becke-Johnson (BJ) damping function\cite{BJ-Damp} seen in equation \ref{eq:BJ-Damp}, where $R_0 = \sqrt{C_8^{AB}/C_6^{AB}}$. The BJ damping function instead goes to a non-zero value as $R \rightarrow 0$. Although they both act the same at long distances, at short distances CHG would damp too much, causing an artifical repuslive force, this can lead to bond lengths even longer than plain DFT. As the BJ damping scheme does not go to zero it avoids creating this repuslive force, as such the default DFT-D3 damping scheme is BJ unless otherwise stated.\cite{D3-Damp}
-
-	\subsubsection{DFT-D4}
-	
+	This method was soon replaced with the Becke-Johnson (BJ) damping function\cite{BJ-Damp} seen in equation \ref{eq:BJ-Damp}, where $R_0 = \sqrt{C_8^{AB}/C_6^{AB}}$. The BJ damping function instead goes to a non-zero value as $R \rightarrow 0$. Although they both act the same at long distances, at short distances CHG would damp too much, causing an artificial repulsive force, this can lead to bond lengths even longer than plain DFT. As the BJ damping scheme does not go to zero it avoids creating this repulsive force, as such the default DFT-D3 damping scheme is BJ unless otherwise stated.\cite{D3-Damp}
 
 	\subsection{Non-Local Correlation Functionals}
 	\label{sec:NL}
-	Unlike the semi-empirical correction terms introduced in section \ref{sec:semi-empirical}, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including these points allows for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very computationally intensive, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desireable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
+	Unlike the semi-empirical correction terms introduced in section \ref{sec:semi-empirical}, the methods outlined in this section are not corrections to, but are functionals themselves. These non-local density methods use the electron density at \emph{every} point in space, hence their name; unlike the non-local methods such as LDA and GGA, which only use local points in space. Including these points allows for very long range correlation effects, the kind which cause the biologically important long range van der Waals forces, which local functionals cannot properly calculate. Paired with other LDA or GGA functionals, non-local correlation methods help to complete the model at longer ranges in a seamless fashion. Although the final integral is very computationally intensive, it relies only on the electron density, along with one or two fitted adjustable parameters, and as such uses very little empiricism, which may be desirable from a theoretical point of view. They are only used to find the correlation energy, and as such need to be paired with an exchange functional, and a local density approximation correlation function. The final energy is therefore
 	\begin{align}
-		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{L} + E_\text{C}^\text{NL}
+		E_\text{XC}^{NL} = E_\text{X} + E_\text{C}^\text{L} + E_\text{C}^\text{NL}.
 	\end{align} 
 
-	The non-local correlation energy is defined as 
+	The non-local correlation energy is defined as
 	\begin{align}
-		E^\text{NL}_\text{C} = \frac{1}{2} \int  \rho(\vec{r}) \Phi(\vec{r}, \vec{r}') \rho(\vec{r}') \d\vec{r} \d\vec{r}'
+		E^\text{NL}_\text{C} = \frac{1}{2} \int  \rho(\vec{r}) \Phi(\vec{r}, \vec{r}') \rho(\vec{r}') \d\vec{r} \d\vec{r}',
 	\end{align}
-	where $\Phi(\vec{r}, \vec{r}')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(\vec{r})$ is the electron density at point $\vec{r}$. This allows for a perturbation at a point $\vec{r}$ which then induces electron correlation at a far away point $\vec{r}'$. The kernel is the heart of that which makes the functional distinct, and varies from functional to functional. All modern non-local correlation functionals take this form, which is based off the work of Dobson and Dinte (DD) \cite{DD}, and, Andersson, Langreth, and Lundqvist (ALL)\cite{ALL}.
+	where $\Phi(\vec{r}, \vec{r}')$ is the \emph{correlation kernel} (a functional to be integrated), and $\rho(\vec{r})$ is the electron density at point $\vec{r}$. This allows for a perturbation at a point $\vec{r}$ which then induces electron correlation at a far away point $\vec{r}'$. The kernel is the heart of that which makes the functional distinct, and varies from functional to functional. All modern non-local correlation functionals take this form, which is based off the work of Dobson and Dinte (DD)\cite{DD}, and, Andersson, Langreth, and Lundqvist (ALL)\cite{ALL}.
 	In order for a non-local correlation functional to be "seamless" it must not operate in the same region as the local correlation functional as to avoid double counting. 
 
 	\subsubsection{vdW-DF2}
-	In 2004 Dion \al introduced the first non-local correlation method, vdW-DFT1. \cite{vdw04Original-Dion2004} This proved a success, especially in areas suhc as adsorption to surfaces and graphene interactions, where previous methods had failed. \cite{vdW-review} However, it still vastly underestimated hydrogen bonding, and overestimate molecular separation. The derivation of the kernel for both vdW-DF1 and vdW-DF2 is large and tedious, and as such not included in this limited review, however it can be found in reference \cite{vdw04Original-Dion2004}. For a similar but simpler example based on the same principles, see section 3.2.1.
+	In 2004 Dion \al introduced the first non-local correlation method, vdW-DFT1.\cite{vdw04Original-Dion2004} This proved a success, especially in areas such as adsorption to surfaces and graphene interactions, where previous methods had failed.\cite{vdW-review} However, it still vastly underestimated hydrogen bonding, and overestimate molecular separation. The derivation of the kernel for both vdW-DF1 and vdW-DF2 is large and tedious, and as such not included in this limited review, however it can be found in reference \cite{vdw04Original-Dion2004}. For a similar but simpler example based on the same principles, see section 3.2.1.
 
-	To fix the issues with vdW-DF1, Lee \al proposed an improved model in 2010, vdW-DF2. \cite{Lee2010-vdW-DF2-Original} The revPBE\cite{revPBE} exchange functional which was used in the original was replaced with the less repulsie rPW86 functional. \cite{rPW86} Along with this a reparamaterisation was perfomed on the constant controlling the size of the exchange functional. This indeed fixed most of the problems with vdW-DF1, performing especially well on small molecules. Some problems still remained for large bulk molecules and adsorption to metals. 
+	To fix the issues with vdW-DF1, Lee \al proposed an improved model in 2010, vdW-DF2.\cite{Lee2010-vdW-DF2-Original} The revPBE\cite{revPBE} exchange functional which was used in the original was replaced with the less repulsive rPW86 functional.\cite{rPW86} Along with this a reparamaterisation was performed on the constant controlling the size of the exchange functional. This indeed fixed most of the problems with vdW-DF1, performing especially well on small molecules. Some problems still remained for large bulk molecules and adsorption to metals. 
 
 
 	\subsubsection{VV10}
 	\label{sec:VV10}
-	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their method from the previous year, VV09, which was based on Dion \al's vdW-DFT1 method.\cite{VV09Original-Vydrov2009}\cite{Vydrov2010} 
-	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011} 
+	Introduced by Vydrov and Van Voorhis, VV10 was introduced in 2010 as the successor to their method from the previous year, VV09, which was based on Dion \al's vdW-DFT1 method.\cite{VV09Original-Vydrov2009,Vydrov2010} 
+	Despite being the simplest, VV10 is the most accurate in the VV family.\cite{Grimme2011}
 
-	After much thought, the correlation kernel is found to be  
+	Chosen \textit{ad hoc} by the author's discretion; the correlation is written as
 	\begin{align}
-		\Phi = - \frac{3}{2gg'(g+g')}
+		\Phi = - \frac{3}{2gg'(g+g')},
 	\end{align}
 	where 
 	\begin{align}
-		g &= \omega_0(r)R^2 + \kappa(r)\\
-		R &= \absolutevalue{r - r'}.
+		g &= \omega_0(\vec{r})R^2 + \kappa(\vec{r})\\
+		R &= \absolutevalue{\vec{r} - \vec{r}'}.
 	\end{align}
-	
-	$\omega_0(r)$ above is 
+	Where the function $\omega_0$ above, is defined as
+	\begin{align}
+		\omega_0(\vec{r}) \defeq \sqrt{ \omega_g^2(\vec{r}) + \frac{\omega_p^2(\vec{r})}{3}},
+	\end{align}
+	where $\omega_p$ is the local plasma frequency, and is defined as 
+	\begin{align}
+		\omega_p^2(\vec{r}) &\defeq 4\pi \rho,
+	\end{align}
+	where $\rho$ is the \emph{total} electron density. The local band gap $\omega_g^2(\vec{r})$ is 
+	\begin{align}
+		\omega_g^2(\vec{r}) = C \absolutevalue{\frac{\nabla \rho(\vec{r})}{\rho(\vec{r})}}^4,
+	\end{align}
+	where $C$ is a parameter to be adjusted. The last term in $g$ is
+	\begin{align}
+		\kappa(\vec{r}) &= b \frac{\nu_F^2(\vec{r})}{\omega_p(\vec{r})} \\
+		\nu_F(\vec{r}) &= (3 \pi^2 \rho)^{1/3},
+	\end{align}
+	where $b$ is another adjustable parameter which helps to control the short range dampening of the $1/R^6$ asymptote. $\nu_F(\vec{r})$ is the local Fermi velocity. 
+	Despite the large amount of equations here, it's important to note that everything here relies on only two things, the electron density, $\rho(\vec{r})$, at a certain point $\vec{r}$, and the \emph{total} electron density. 
+	In order for the long range electron correlation energy to go to zero at the electron gas limit, a constant relying on the adjustable parameter $b$ is multiplied by the total number of electrons in the system. This is then added on to the correlation energy to give the new correlation energy as:
 
 	\begin{align}
-		\omega_0(r) = \sqrt{ \omega_g^2(r) + \frac{\omega_p^2(r)}{3}} 
-	\end{align}
-	where $\omega_p$ is the local plasma frequency and is defined as 
-	\begin{align}
-		\omega_p^2(r) &= 4\pi \rho
-	\end{align}
-	where $\rho$ is the \emph{total} electron density. The local band gap $\omega_g^2(r)$ is 
-	\begin{align}
-		\omega_g^2(r) = C \absolutevalue{\frac{\grad \rho(r)}{\rho(r)}}^4
-	\end{align}
-	where C is a paramater to be adjusted. The last term in $g$ is
-	\begin{align}
-		\kappa(r) &= b \frac{\nu_F^2(r)}{\omega_p(r)} \\
-		\nu_F(r) &= (3 \pi^2 \rho)^{1/3}
-	\end{align}
-	where $b$ is another adjustable parameter which helps to control the short range dampening of the $1/R^6$ asymptote. $\nu_F(r)$ is the local Fermi velocity . 
-	Despite the large amount of equations here, it's important to note that everything here relies on only two things, the electron density, $\rho(r)$, at a certain point $r$, and the \emph{total} electron density. 
-	In order for the long range electron correlation energy to go to zero at the electron gas limit, a constant relying on the adjustable parameter $b$ is multiplied by the total number of electrons in the system. This is then added on to the correlation energy to give the new correlation energy.
-	\begin{align}
-		E_\text{C}^\text{VV10} = E_\text{C}^\text{NL} + \beta (b)N_{e^-}
+		E_\text{C}^\text{VV10} = E_\text{C}^\text{NL} + \beta (b)N_{e^-}.
 	\end{align}
 	Where $N_{e^-}$ is the number of electrons and 
 	\begin{align}
-		\beta(b) = \frac{1}{32} \left(\frac{3}{b^2}\right)^{\frac{3}{4}}
+		\beta(b) = \frac{1}{32} \left(\frac{3}{b^2}\right)^{\frac{3}{4}}.
 	\end{align}
-	$b$ and $C$ were originally fit on the S22 data set, giving them values of $5.9$ and $0.0093$ respectively.\cite{Vydrov2012} $b$ affects short range dispersion forces greatly, and as such is normally refitted depending on the use case i.e. if it typcially overbinds or underbinds for a certain scenario.
+
+	The adjustable parameters $b$ and $C$ were originally fit on the S22 data set, giving them values of $5.9$ and $0.0093$ respectively.\cite{Vydrov2012} $b$ affects short range dispersion forces greatly, and as such is normally refitted depending on the use case i.e. if it typically overbinds or underbinds for a certain scenario.
 	In the original paper, Vydrov and Van Voorhis pair VV10 with the exchange functional rPW86 and the correlation functional PBE. Using the same parameterisation as the similar vdw-DF2 functional, this gives the final VV10 exchange correlation energy to be 
 	\begin{align}
-		E_\text{XC}^{VV10} = E_\text{X}^\text{rPW86} + E_\text{C}^{PBE} + E_\text{C}^{VV10}
+		E_\text{XC}^{VV10} = E_\text{X}^\text{rPW86} + E_\text{C}^{PBE} + E_\text{C}^{VV10}.
 	\end{align} 
 
-	The semi-local exchange functional, rPW86, is known to suffer greatly from self-interaction error (SIE), which causes problems with charge transfer complexes and transition states of chemical reactions. This caused strong overbinding in hydrogen bonded complex.\cite{Vydrov2012} Long-range corrected (LC) hybrid exchange funcitonals have been shown to reduce SIE. \cite{vydrov2006-LC-Hybrids} The use of LC hybrids has also shown to be effective at describing the repulsive parts of the van der Waals potential. \cite{sato2007-LC-Hybrids} VV used the LC-$\omega$PBE exchange functional using the parameterisation of $C = 0.0089$, $b = 6.3$, and $\omega = 0.45$, this alternative long-range corrected method is known as LC-VV10, and generally fixes the overbinding of hydrogen bonds.
+	The semi-local exchange functional, rPW86, is known to suffer greatly from self-interaction error (SIE), which causes problems with charge transfer complexes and transition states of chemical reactions. This caused strong overbinding in hydrogen bonded complex.\cite{Vydrov2012} Long-range corrected (LC) hybrid exchange funcitonals have been shown to reduce SIE.\cite{vydrov2006-LC-Hybrids} The use of LC hybrids has also shown to be effective at describing the repulsive parts of the van der Waals potential.\cite{sato2007-LC-Hybrids} VV used the LC-$\omega$PBE exchange functional using the parameterisation of $C = 0.0089$, $b = 6.3$, and $\omega = 0.45$, this alternative long-range corrected method is known as LC-VV10, and generally fixes the overbinding of hydrogen bonds.
 
 	VV10 can be paired with almost any exchange correlation functional, however it is best to use functionals that give little to no major van der Waals forces, as to avoid double counting.
-	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicitive of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much hheavier, as such $b \approx 8$.\cite{Grimme2011}
+	Hujo and Grimme were the first to extensively couple the VV10 correlation energy, $E_\text{C}^\text{VV10}$, to other standard LDA and GGA functionals, adjusting only $b$ with each new functional.\cite{Grimme2011-VV10-LDA-GGA-Pairing} This is dubbed "DFT-NL" in reference to Grimme's other semi-empirical methods mentioned in section 2. The size of the damping parameter $b$ is indicative of the strength of the semi-local density functional. For repulsive functionals such as rPBE, $b \approx 4$, thus giving larger VV10 contributions at short range. Whilst for attractive functionals, such as the unreparamaterised PBE, VV10 needs to be damped much heavier, as such $b \approx 8$.\cite{Grimme2011}
 	
-
-
-	% Compared use/citations on web of sciences in  conclusion to how widespread it is i.e. if it were so great why don't more people use it 
 
 	\subsection{Exchange-Dipole Moment Model}
 	\label{sec:XDM}
@@ -250,96 +245,96 @@
 	\begin{align}
 		h_{X,\sigma}(\vec{r},\vec{r}') = -\frac{1}{\rho_\sigma(\vec{r})} \sum_{ij} 
 										\phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r}')
-										\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
+										\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}).
 	\end{align}
-	As such, if $\vec{r} = \vec{r}'$ then 
+	As such, if $\vec{r} = \vec{r}'$, then 
 	\begin{align}
-		h_{X,\sigma}(\vec{r}, \vec{r}) = -\rho_\sigma(\vec{r})
+		h_{X,\sigma}(\vec{r}, \vec{r}) = -\rho_\sigma(\vec{r}).
 	\end{align}
-	thus, the probability of finding two electrons at the same point is \emph{zero}.
+	Thus, the probability of finding two electrons at the same point is \emph{zero}.
 	The sum is over occupied real orbitals, $i$ and $j$, of spin $\sigma$, where $\rho_\sigma$ is the total spin-$\sigma$ electron density. The existence of an electron at $\vec{r}$ reduces the chance to find another electron at $\vec{r}'$, 
 
 	As the electron moves through space so does its hole; the electron and its hole are charge neutral overall. 
 	The shape of the hole depends on the position of the electron, $\vec{r}$, this shape is almost never spherically symmetric about the electron, except for the case of a uniform electron gas. This lack of symmetry creates an exchange hole dipole moment, given by 
-	\footnotesize
+	{\footnotesize
 	\begin{align}
 		\label{eq:exchange-dipole}
 		\vec{d_{X,\sigma}}(\vec{r}) = \left( \frac{1}{\rho_\sigma(\vec{r})} \sum_{ij}\int
 									 \phi_{i\sigma}(\vec{r}') \phi_{j\sigma}(\vec{r})' 
 									 \vec{r}\phi_{i\sigma}(\vec{r}) \phi_{j\sigma}(\vec{r}) 
-									 \d\vec{r}'\right) - \vec{r}
-	\end{align}
-	\normalsize
+									 \d\vec{r}'\right) - \vec{r}.
+	\end{align}}
 	Note that some papers may use $\mu$ for the dipole moment instead of $d$
 
 	This exchange dipole moment, $\vec{d_{X\sigma}}(\vec{r})$, in atom A, will induce a dipole moment in another atom, B, and vice versa. This dipole-dipole interaction is proportional to the square of the respective exchange dipole moment. The square of the \emph{atomic} exchange dipole moment is given by
 	\begin{align}
-		\langle d_{X}^2 \rangle_A = \sum_\sigma \int  w_A(\vec{r}) \rho_\sigma(\vec{r}) d_{X,\sigma}^2(\vec{r}) \d\vec{r}
+		\langle d_{X}^2 \rangle_A = \sum_\sigma \int  w_A(\vec{r}) \rho_\sigma(\vec{r}) d_{X,\sigma}^2(\vec{r}) \d\vec{r}.
 	\end{align}
-	$w_A(\vec{r})$ is the Hirshfeld partitioning\cite{Hirshfeld} weight for an atom $A$. This helps to account for the molecular environment of an atom, by estimating changes in the atomic volume and thus changes the polarisability. 
-	Where 
+	The Hirshfeld partitioning\cite{Hirshfeld} weight for an atom $A$ is $w_A(\vec{r})$. This helps to account for the molecular environment of an atom, by estimating changes in the atomic volume and thus changes the polarisability:
 	\begin{align}
-		w_A(\vec{r}) = \frac{\rho_A^\text{atom}(\vec{r})}{\sum_B\rho_B^\text{atom}(\vec{r})}
+		w_A(\vec{r}) = \frac{\rho_A^\text{atom}(\vec{r})}{\sum_B\rho_B^\text{atom}(\vec{r})}.
 	\end{align}
 
 	The exchange-hole dipole moment induced in atom B from atom A, at length $R$, will have a potential energy of 
 	\begin{align}
-		U^{AB} = -2\langle d_X^2 \rangle_A \alpha_B / R^6
+		U^{AB} = -2\langle d_X^2 \rangle_A \alpha_B / R^6,
 	\end{align} 
 	where the reverse interaction is  
 	\begin{align}
-		U^{BA} = -2\langle d_X^2 \rangle_B \alpha_A / R^6
+		U^{BA} = -2\langle d_X^2 \rangle_B \alpha_A / R^6,
 	\end{align} 
-	$\alpha$ is the polarisability of a given atom modified to account for chemical environment where
+	and $\alpha$ is the polarisability of a given atom modified to account for chemical environment where
 	\begin{align}
-		\alpha_A = \alpha_A^\text{free} \frac{\int\d\vec{r} w_a(\vec{r})\rho(\vec{r})r^3}{\int \d\vec{r}\rho_A^\text{free}(\vec{r})r^3}
+		\alpha_A = \alpha_A^\text{free} \frac{\int\d\vec{r} w_a(\vec{r})\rho(\vec{r})r^3}{\int \d\vec{r}\rho_A^\text{free}(\vec{r})r^3}.
 	\end{align}
 	
-	
-	$\langle d_X^2 \rangle$ is given by the integral
+	$\langle d_X^2 \rangle$ is given by the integral:
 	\begin{align}
 		\langle d_X^2 \rangle = \int \rho_\alpha(\vec{r}) d_{X\alpha}(\vec{r}) \d \vec{r} +
-								\int \rho_\beta(\vec{r}) d_{X\beta}(\vec{r}) \d \vec{r}
+								\int \rho_\beta(\vec{r}) d_{X\beta}(\vec{r}) \d \vec{r},
 	\end{align}
 	where $\rho_\alpha$ is the density of spin up electrons, and $\rho_\beta$ the density of spin down. $d_{X\sigma}(\vec{r})^2$ is the squared \emph{exact} exchange-hole dipole moment of $\sigma$ spin electron at point $\vec{r}$ found in equation \ref{eq:exchange-dipole}. This is a cumbersome integral however, as such Becke and Roussel derived an approximation to this exact model, dubbed BRX, of the form
 	\begin{align}
-		d_{BRX,\sigma}^2(\vec{r}) = \left(\frac{e^{-x}}{8\pi\rho_\sigma(\vec{r})}\right)^{2/3}x^2
+		d_{BRX,\sigma}^2(\vec{r}) = \left(\frac{e^{-x}}{8\pi\rho_\sigma(\vec{r})}\right)^{2/3}x^2,
 	\end{align} 
-	Where $x$ is depent on the electron density and its gradient, for more details see reference \cite{XDM-Original}. As this method is much faster than the exact equation in equation \ref{eq:exchange-dipole}, from here on out $d_{X,\sigma}$ will refer to $d_{BRX,\sigma}$, as it sees the most useage by far. 
+	where $x$ is depent on the electron density and its gradient, for more details see reference \cite{XDM-Original}. As this method is much faster than the exact equation in equation \ref{eq:exchange-dipole}, from here on out $d_{X,\sigma}$ will refer to $d_{BRX,\sigma}$, as it sees the most useage by far. 
 
 	Using second-order perturbation theory\cite{XDM-dipole} the dispersion energy can be written as 
 	\begin{align}
-		E_\text{disp} = -\frac{C_6}{R^6}
+		E_\text{disp} = -\frac{C_6}{R^6}.
 	\end{align}
 	This is same principle as the methods mentioned in section \ref{sec:semi-empirical}, but with a different derivation of the $C_6$ constant, which is written as
 	\begin{align}
-		C_6^{AB} = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}
+		C_6^{AB} = \frac{\langle d_X^2 \rangle_A \langle d_X^2 \rangle_B \alpha_A \alpha_B}{\langle d_X^2 \rangle_A\alpha_B + \langle d_X^2 \rangle_B\alpha_A}.
 	\end{align} 
 	With a suitable damping function applied, like the one seen in equation \ref{eq:damp} and figure \ref{fig:Fermi}, we can write our final dispersion energy as a sum over atoms $A$ and $B$ as 
 	\begin{align}
-		E_\text{disp} = - \sum_{A,B} \frac{C_6^{AB}}{R^6} f_\text{damp}(R)
+		E_\text{disp} = - \sum_{A,B} \frac{C_6^{AB}}{R^6} f_\text{damp}(R).
 	\end{align}
 	In 2007, Becke and Johnson updated their approach\cite{XDM-Revisited} by adding higher order coefficients into the mix, derived from the exchange quadrupole and octupole moments, taking $C_8$ and $C_{10}$ coefficients respectively. These coefficients can be found in reference \cite{XDM-Revisited} This new approach takes the form of 
 	\begin{align}
-		E_\text{disp} = -\sum_{A,B} \sum_{n=6,8,10} \frac{C_n^{AB}}{R^n} f^n_\text{damp, BJ}(R)
+		E_\text{disp} = -\sum_{A,B} \sum_{n=6,8,10} \frac{C_n^{AB}}{R^n} f^n_\text{damp, BJ}(R),
 	\end{align}
-	Where a novel damping functiona developed by Becke and Johnson is being used \cite{BJ-Damp}
+	where a novel damping functional developed by Becke and Johnson is being used:\cite{BJ-Damp}
 	\begin{align}
 		\label{eq:BJ-Damp}
-		f^n_\text{damp,BJ} (R) = \frac{R^n}{R^n + (a_1 R_0 + a_2)^n}\\
+		f^n_\text{damp,BJ} (R) = \frac{R^n}{R^n + (a_1 R_0 + a_2)^n},
+	\end{align}
+	with
+	\begin{align}
 		R_0 = \frac{1}{3} \left( \sqrt{\frac{C_8^{AB}}{C_6^{AB}}} + \sqrt{\frac{C_{10}^{AB}}{C_8^{AB}}}
-		+ \sqrt[^4]{\frac{C_{10}^{AB}}{C_6^{AB}}} \right)
+		+ \sqrt[^4]{\frac{C_{10}^{AB}}{C_6^{AB}}} \right).
 	\end{align}
 	Where $a_1$ and $a_2$ depend on the functional being used.
 	
-	The attentive reader will notice that unlike previous methods mentioned, XDM uses no fitting of parameters. This makes it very theoretically pure. This also makes XDM a good candidate for studying systems beyond their basic properties, such as the most efficient site of adsorption to a heavy metal (see section:\ref{sec:adsorption}). This is often miscalculated by methods in section \ref{sec:semi-empirical}.
+	Unlike previous methods mentioned, XDM uses no fitting of parameters. This makes it very theoretically pure. This also makes XDM a good candidate for studying systems beyond their basic properties, such as the most efficient site of adsorption to a heavy metal (see section:\ref{sec:adsorption}). This is often miscalculated by methods in section \ref{sec:semi-empirical}.
 
-	\section{Perfomance and Applications}
+	\section{Performance and Applications}
 	\subsection{Test Sets}
-	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section \ref{sec:VV10}), another non-local density functional, vdW-DF2 \cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X \cite{M06-2X} and $\omega$B97X-D \cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in table \ref{tab:VV10S66}.
+	In 2012 Vydrov and Van Voorhis compared VV10, LC-VV10 (using the parameterisations mentioned in section \ref{sec:VV10}), another non-local density functional, vdW-DF2\cite{Lee2010-vdW-DF2-Original}, and meta-hybrid GGA functionals which have no non-local correlation, M06-2X\cite{M06-2X} and $\omega$B97X-D\cite{B97X-D}. They calculated the binding energy at fixed equilibrium distance using the highly accurate (less than 1\% uncertainty) S66\cite{s66a, s66b} test set. It contains the binding energy for 66 weakly bound molecular systems, split into three groups: 23 dispersion dominated systems, 23 hydrogen-bonded systems, and 20 with mixed behaviour. The mean errors of the results can be seen in table \ref{tab:VV10S66}.
 
-	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functioanls also tested. As mentioned in section \ref{sec:VV10}, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA fucntionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
-	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time \cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
+	vdW-DF2 tended to underbind, especially on the mixed aromatic systems, but tended to perform better on smaller systems, leaving it with an average mean error of $-0.48$ \kcal, the largest of the group. VV10 performs especially well with dispersion dominant and mixed systems, with some slight overbinding, it had the second most accurate result for dispersion based systems, $-0.20$ \kcal, and the most accurate for mixed systems, $0.15$ \kcal. A noteworthy increase over the meta-GGA functionals also tested. As mentioned in section \ref{sec:VV10}, VV10 tends to overbind hydrogen-bonded molecules, giving a result ($0.53$ \kcal) significantly worse than the meta-hybrid GGA functionals, this is caused by the use of the semilocal rPW86 exchange component. When a long-range corrected exchange functional is used as is the case of LC-VV10 and $\omega$B97X-D, the hydrogen-bonded mean error is greatly reduced, this is evidence by LC-VV10's mean hydrogen bonded error being over half as low as regular VV10. 
+	A noteable decrease in the mean error of LC-VV10 is observed for dispersion dominant systems too, with the mean error being exactly half as small as VV10. Overall, LC-VV10 perfoms best out of all the functionals tested, with nearly half as small mean error than the next best functional. This shows as clear success of VV10, and especially of LC-VV10 over its non-local density functional ancestors. The improved accuracy comes at the cost of higher computational time\cite{vydrov2008-vdw-comparisons}, quadrature grid optimisations can help to alleviate some of this cost however. For LC-VV10, the most intensive step was found to actually be the exchange component, not the non-local correlation.
 
 	\begin{table*}
 		\centering
@@ -359,27 +354,27 @@
 			MAE & 0.48 & 5.1 & -0.9 & 6.9 & -5.8\\
 			MAPE & 9.0 & 6.3 & 3.3 & 8.5 & 7.1\\
 		\end{tabular}
-		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in references \cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MAPE is the mean absolute percentage error. }
+		\caption{Errors of the binding energy at equilibrium distance for the functionals benchmarked against the S66 test set for weakly bounded systems in references\cite{Vydrov2012}, where MAE is the mean absolute error in \kcal and MAPE is the mean absolute percentage error. }
 		\label{tab:VV10S66}
 	\end{table*}
 
-	Although the focus of this paper is on van der Waals interactions, that is not DFT's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geomtry is reliant on only one bond legnth. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
+	Although the focus of this paper is on van der Waals interactions, that is not DFT's only use, and so if the correction is to be of any value it must obtain accurate results for strongly bound (i.e. ionic and covalent) systems as well. In their 2010 paper Vydrov and van Voorhis\cite{Vydrov2010} measured the equilibrium bond lengths\cite{physvals} of 20 closed shell ionic and covalent molecules, which consisted mostly of diatomics and molecules with high symmetry whose geometry is reliant on only one bond length. VV10 achieved the same mean error as PBE of 0.017 \oA (bond lengths tend to range from 1-3 \oA). The other non-local density functional vdW-DF2 gave a result slightly higher at 0.021 \oA; rPW86-PBE, which is without the non-local correlation term, was only slightly worse with an error of 0.0018 \oA. The same was done for atomisation energies\cite{atomisationvals}, of which VV10 performed relatively well with a mean error of 2.9 \kcal, whilst rPW86-PBE and PBE had mean errors of -2.0 \kcal and 10.4 \kcal respectively. Another successful result. 
 
 
 	\subsection{Adsorption to Metal Surfaces}
 	\label{sec:adsorption}
-	Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM perfermed quite well, with its values for gold and silver being within the uncertainty, however copper was underestimated by $0.06$ eV outside the margin of uncertainty, giving an overal MAE of  $0.04$ eV, still a great improvement on PBE-XDM's $0.10$ eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. 
+	Adsorption to metals is an area where uncorrected functionals tend to fail, and so is a popular test for the quality of a dispersion correction. In a 2016 paper Christian \al measured\cite{Christian2016-CoinageAdsorption} the energy of adsorption of benzene to the (1 1 1) face of three coinage metals: copper, gold, and silver. 86bPBE-XDM performed quite well, with its values for gold and silver being within the uncertainty, however copper was underestimated by $0.06$ eV outside the margin of uncertainty, giving an overall MAE of  $0.04$ eV, still a great improvement on PBE-XDM's $0.10$ eV. SCAN-rVV10 tended to overestimate the adsorption energy by the same amount that 86bPBE-XDM underestimated it, giving them the same MAE. 
 
-	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hydrides in the fitting data, and that by changing the training data a more accurate answer can be achieved. \cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievment.
+	PBE-D2 overestimated the the adsorption largely, especially in the case of gold, overestimating by $0.7$ eV. This is likely due to the fact that the $C_6$ coefficient for DFT-D2 does not account for the chemical environment, and that it has no higher order terms. As expected PBE-D3 performed comparatively much better, with a MAE of $0.19$ eV, however there was still an overestimation on copper by $0.30$ eV. This may be due to the use of neutral hydrides in the fitting data, and that by changing the training data a more accurate answer can be achieved.\cite{D3-ABC} This method with new constants is called DFT-D3(ABC). This new method managed to get the MAE error down to only $0.08$ eV using PBE, an impressive achievement.
 
-	Adhikari \al wrote a similar paper in 2021 \cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. The compiled data for both of these papers can be seen in table \ref{tab:adsorption}.
+	Adhikari \al wrote a similar paper in 2021\cite{VV10-Adsorption} measuring the adsorption distance of benzene over the same group of metals. Unfortunately data only exists for the adsorption of silver, however using the vdW radii it can be predicted that Ag and Au will have a similar distance, whilst Cu will be significantly shorter. B86bPBE+XDM was in the area of uncertainty for silver, and put copper at 0.32 \oA shorter, thus agreeing with the theory. Both PBE-rVV10 and PBE-D3 performed relatively well, being 0.02 eV from the experimental value and 0.07 eV respectively. However they both failed to put copper at a lower distance. Using SCAN for the exchange correlation functional fixes the order, however they both underestimate the experimental value of silver. The compiled data for both of these papers can be seen in table \ref{tab:adsorption}.
 
-	This data emphasises that pairing the dispersion with the correct functional must not be overlooked, and can severly affect an experiment. 
+	This data emphasises that pairing the dispersion with the correct functional must not be overlooked, and can severely affect an experiment. 
 
 	\begin{table*}
 		\centering
 		\begin{tabular}[]{c|c c c c | c c}
-		Functional & \multicolumn{4}{c}{Adsorption Energy / eV \cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA \cite{VV10-Adsorption}}\\
+		Functional & \multicolumn{4}{c}{Adsorption Energy / eV\cite{Christian2016-CoinageAdsorption}}\ & \multicolumn{2}{c}{Adsorption Distance / \oA\cite{VV10-Adsorption}}\\
 			\hline
 			& Cu (1 1 1) & Ag (1 1 1) & Au (1 1 1) & MAE & Ag (1 1 1) &  Ordering y/n\\
 		PBE	& 0.08 & 0.08 & 0.08 & 0.57 & 3.44 & n\\
@@ -392,7 +387,7 @@
 		B86bPBE-XDM & 0.59 & 0.68 & 0.65 & 0.04 & 3.03 & y\\
 		Experimental & 0.69 $\pm$ 0.04 & 0.68 $\pm$ 0.05 & 0.65 $\pm$ 0.03 & --- & 3.04 $\pm$ 0.02 & ---
 		\end{tabular}
-		\caption{Data for various dispersion corrections and their functionals for the adsorption energy of benzne to various coinage metals\cite{Christian2016-CoinageAdsorption}, and the adsorption to distance of benzene to silver, as well as whether the ordering of the adsorption distance to the other metals was correct or not \cite{VV10-Adsorption}}
+		\caption{Data for various dispersion corrections and their functionals for the adsorption energy of benzene to various coinage metals\cite{Christian2016-CoinageAdsorption}, and the adsorption to distance of benzene to silver, as well as whether the ordering of the adsorption distance to the other metals was correct or not.\cite{VV10-Adsorption}}
 		\label{tab:adsorption}
 	\end{table*}
 
@@ -400,18 +395,18 @@
 	\subsection{Physical Properties}
 	Otero-de-la-Roza \al tested different dispersion corrections through bulk ionic crystals\cite{Roza-2020-XDM}, although this doesn't immediately seem like the best use case for a van der Waals correction it is an important to note that even ionic crystals have van der Waals interactions, and so of course it is important that they are modelled correctly. Not only that, but it is important to make sure that the correction does not worsen results of dispersionless functionals. PBE is one of the most popular functionals for cases like this, however, for XDM 86bPBE is the recommended functional. For details on the damping function parameters see reference \cite{PBE-underbinding}. 
 	
-	The lattice constants for 20 alkalie halides were calculated for comparison. PBE-XDM had a mean error of $-0.134$ \oA, a similar result with a different sign to PBE-D3 seen in section \ref{sec:D3}, compared to base PBE which had a mean error of  $0.164$ \oA. Otero-de-la-Roza \al think this poor result is due to PBE's nature to underestimate non-bonded repulsion\cite{PBE-underbinding}, this will in turn cause PBE-XDM to overbind dispersion forces, causing a much smaller latice constant. The use of the recommended 86bPBE functional gave a much more impressive result of $-0.038$ \oA. Unfortunately there is still a systematic underestimation for 86bPBE-XDM, the problem may lie in the delocalisation error for the functional\cite{86bPBE-delocalisation}. To remedy this a hybrid functional was tested, 86bPBE-25X-XDM gave a much lower mean mean error of $-0.017$, \cite{Roza-2020-XDM}. Tao \al developed a non-local correlation density method specialising in ionic solids. As one would expect, this method had a very impressive mean error of $-0.006$ eV.\cite{Tao-vdW}
+	The lattice constants for 20 alkalie halides were calculated for comparison. PBE-XDM had a mean error of $-0.134$ \oA, a similar result with a different sign to PBE-D3 seen in section \ref{sec:D3}, compared to base PBE which had a mean error of  $0.164$ \oA. Otero-de-la-Roza \al think this poor result is due to PBE's nature to underestimate non-bonded repulsion\cite{PBE-underbinding}, this will in turn cause PBE-XDM to overbind dispersion forces, causing a much smaller lattice constant. The use of the recommended 86bPBE functional gave a much more impressive result of $-0.038$ \oA. Unfortunately there is still a systematic underestimation for 86bPBE-XDM, the problem may lie in the delocalisation error for the functional\cite{86bPBE-delocalisation}. To remedy this a hybrid functional was tested, 86bPBE-25X-XDM gave a much lower mean mean error of $-0.017$,\cite{Roza-2020-XDM}. Tao \al developed a non-local correlation density method specialising in ionic solids. As one would expect, this method had a very impressive mean error of $-0.006$ eV.\cite{Tao-vdW}
 
-	GGA functionals tend to underestimate the cohesive energy and bulk moduli of crystelline solids. In 2021 Boungou \al compared the the bulk modulus and cohesive energy of silver for various dispersion corrections.\cite{Boungou2021} With the experimental value of 105.7 GPa, PBE-D3 (94.7 GPa) wasn't always much more successful than plain PBE, which had a commonly cited value of 91.1 GPa. PBE-vdW-DF2 improved on this result giving a bulk modulus of 108.8 GPa. PBE-D3 redeems itself in the calculation of the cohesive energy, giving an error of only 0.03 eV, this is an area where PBE-vdW-DF2 completely failed giving a sizeable 32\% error. The use of LC-VV10 instead may have helped to fix this underestimation of the cohesive energy. 
+	GGA functionals tend to underestimate the cohesive energy and bulk moduli of crystalline solids. In 2021 Boungou \al compared the the bulk modulus and cohesive energy of silver for various dispersion corrections.\cite{Boungou2021} With the experimental value of 105.7 GPa, PBE-D3 (94.7 GPa) wasn't always much more successful than plain PBE, which had a commonly cited value of 91.1 GPa. PBE-vdW-DF2 improved on this result giving a bulk modulus of 108.8 GPa. PBE-D3 redeems itself in the calculation of the cohesive energy, giving an error of only 0.03 eV, this is an area where PBE-vdW-DF2 completely failed giving a sizeable 32\% error. The use of LC-VV10 instead may have helped to fix this underestimation of the cohesive energy. 
 
-	This trend was also confirmed by Ilawe \al when measuring the bulk modulus and cohesive energy of Palladium, as is shown in figure \ref{fig:bulk}.\cite{Ilawe2015} PBE and PBE-D2 had similar errors of -14.4\% and -16.1\% respectively for the bulk modulus, whilst PBE-D3 under the Becke-Jonhson damping scheme\cite{BJ-Damp} gave the best results of all with a -3.4\% error. vdW-DF2 gave a a rather severe error of -38.9\%. A similar trend is shown in the cohesive energy, where vdW-DF2 vastly underestimates, and PBE-D2 and PBE-D3 both overestimate by the same amount. Ironically, plain PBE actually was the best performer for the coshesive energy, though this is inconsistent in other cases. This data is shown in figure \ref{fig:cohesive}.
+	This trend was also confirmed by Ilawe \al when measuring the bulk modulus and cohesive energy of Palladium, as is shown in figure \ref{fig:bulk}.\cite{Ilawe2015} PBE and PBE-D2 had similar errors of -14.4\% and -16.1\% respectively for the bulk modulus, whilst PBE-D3 under the Becke-Jonhson damping scheme\cite{BJ-Damp} gave the best results of all with a -3.4\% error. vdW-DF2 gave a a rather severe error of -38.9\%. A similar trend is shown in the cohesive energy, where vdW-DF2 vastly underestimates, and PBE-D2 and PBE-D3 both overestimate by the same amount. Ironically, plain PBE actually was the best performer for the cohesive energy, though this is inconsistent in other cases. This data is shown in figure \ref{fig:cohesive}.
 
 	\begin{figure}[h]
 		\centering
 		\begin{tikzpicture}
 			\begin{axis}[
 				symbolic x coords={Expt., LDA, PBE, PBE-D2, PBE-D3, vdW-DF2},
-				xtick=data,width=200pt, x tick label style={rotate=90},ylabel=Bulk Modulus (GPa), xlabel=DFT Method,     ylabel near ticks,
+				xtick=data,width=200pt, x tick label style={rotate=45},ylabel=Bulk Modulus (GPa), xlabel=DFT Method,     ylabel near ticks,
 				x label style={at={(axis description cs:0.5,-0.2)},anchor=north},
 				y label style={at={(axis description cs:-0.2,0.85)},anchor=east},
 				]
@@ -425,15 +420,14 @@
 					};
 				\end{axis}
 			\end{tikzpicture}
-			\caption{Bulk modulus of Palladium for varius DFT functionals and their dispersion corrections\cite{Ilawe2015}}
+			\caption{Bulk modulus of Palladium for various DFT functionals and their dispersion corrections.\cite{Ilawe2015}}
 			\label{fig:bulk}
-			
 		\vspace{20pt}
 		\centering
 		\begin{tikzpicture}
 			\begin{axis}[
 				symbolic x coords={Expt., LDA, PBE, PBE-D2, PBE-D3, vdW-DF2},
-				xtick=data,width=200pt, x tick label style={rotate=90},ylabel=Cohesive Energy (eV), xlabel=DFT Method,     ylabel near ticks,
+				xtick=data,width=200pt, x tick label style={rotate=45},ylabel=Cohesive Energy (eV), xlabel=DFT Method,     ylabel near ticks,
 				x label style={at={(axis description cs:0.5,-0.2)},anchor=north},
 				y label style={at={(axis description cs:-0.2,0.85)},anchor=east},
 				]
@@ -447,7 +441,7 @@
 					};
 				\end{axis}
 			\end{tikzpicture}
-			\caption{Cohesive energy of Palladium for varius DFT functionals and their dispersion corrections\cite{Ilawe2015}}
+			\caption{Cohesive energy of Palladium for various DFT functionals and their dispersion corrections.\cite{Ilawe2015}}
 			\label{fig:cohesive}
 			\vspace{-10pt}
 	\end{figure}
@@ -464,7 +458,7 @@
 	Selecting the correct dispersion correction for the task at hand is only part of the problem. If the correction exchange-correlation functional is not selected for the corresponding dispersion correction improvements may be lackluster at best, or even worse than without the correction. This is especially true of exchange functionals which are already overly attractive at a long range, such as revPBE. This is a very complex topic, and there are many different combinations for a wide variety of use cases, so obviously only a small fraction will be shown here. 
 	Hujo and Grimme compared different functionals paired with the DFT-D3 and VV10 dispersion corrections.\cite{Grimme2011-D3-VV10-Compairons} The S66\cite{s66a,s66b} and S22\cite{s22} test sets were used for benchmarking as they contain hightly accurate data designed for dispersion based systems. 
 
-	Although all the functionals tested gave good results of $\leq 0.50$ \kcal, there was much diversity amongst them, as shown in table \ref{tab:VV10D3}. revPBE0-VV10 performed the best in the S22 test set, with a mean absolute deviation of 0.18 \kcal, comapred to B3LYP-VV10 which had a MAD of 0.48 \kcal. This was echoed in the S66 test set, where revPBE-VV10 had under half the MAD of B3PW91-PBE. The same applies for DFT-D3, although it is slightly less extreme, with a maximum difference of 0.22\kcal between different functionals. Whilst BLYP is the best performing functional for D3 in the S66 set, it is amongst the worst for VV10, reinforcing that there is no one-size-fits-all solution.
+	Although all the functionals tested gave good results of $\leq0.50$ \kcal, there was much diversity amongst them, as shown in table \ref{tab:VV10D3}. revPBE0-VV10 performed the best in the S22 test set, with a mean absolute deviation of 0.18 \kcal, compared to B3LYP-VV10 which had a MAD of 0.48 \kcal. This was echoed in the S66 test set, where revPBE-VV10 had under half the MAD of B3PW91-PBE. The same applies for DFT-D3, although it is slightly less extreme, with a maximum difference of 0.22\kcal between different functionals. Whilst BLYP is the best performing functional for D3 in the S66 set, it is amongst the worst for VV10, reinforcing that there is no one-size-fits-all solution.
 	In the same paper it was shown that under the GMTKN30 test set, VV10 when paired with revPBE performed worse than revPBE on its own. This is due to overbinding of revPBE without a dispersion correction, and so when one is applied it becomes even worse. 
 
 	\begin{table}
@@ -480,11 +474,12 @@
 			revPBE  & 0.29 & 0.44 & 0.21 & 0.31\\
 			revPBE0 & 0.18 & 0.28 & 0.24 & 0.22\\
 		\end{tabular}
-		\caption{The mean absolute deviation (MAD) in \kcal of the using the S22 and S66 test sets from different functionals paired with either VV10 or D3 dispersion corrections from reference \cite{Grimme2011-VV10-LDA-GGA-Pairing}}
+		\caption{The mean absolute deviation (MAD) in \kcal of the using the S22 and S66 test sets from different functionals paired with either VV10 or D3 dispersion corrections from reference.\cite{Grimme2011-VV10-LDA-GGA-Pairing}}
 		\label{tab:VV10D3}
 	\end{table}
 
 	%4886
+	\newpage
 	\section{Conclusion}
 	% Which functional to select? Make a table about each functional, maybe what the future holds? Adjustments to be made?
 	% Gaps in research? limitation of D3 style ones, more research for more general 
@@ -494,9 +489,9 @@
 
 	Despite its popularity however, many problems still remain. As opposed to properties like energy and structure (e.g. bond length), less researched properties like phonon dispersion and elastic constants are in need of more research to test many corrections abilities. The same applies to systems under distress, such as those under high pressure, where some corrections (especially those of the semi-empirical kind) may begin to break down. Modelling systems including solvents is simply too complicated for current dispersion corrections, as such new methods must be developed. 
 
-	Despite it not often being the most accurate, nor consistent in edge cases, nor the most theoretically acceptable, DFT-D3 is the most cited dispersion correction in this review by far, with only its more primitive older sibling coming even close. It is fair to let the popularity of it speak for itself as an example to why it should be implimented. XDM, although the slowest of the group, is often the most accurate, providing great results in cases where others fail to pick up on more nuanced behaviour. VV10 strikes a middle ground, with decent speeds and good perfomance, usually managing to simulate subtle behaviour, whilst just missing out on accuracy. 
+	Despite it not often being the most accurate, nor consistent in edge cases, nor the most theoretically acceptable, DFT-D3 is the most cited dispersion correction in this review by far, with only its more primitive older sibling coming even close. It is fair to let the popularity of it speak for itself as an example to why it should be implemented. XDM, although the slowest of the group, is often the most accurate, providing great results in cases where others fail to pick up on more nuanced behaviour. VV10 strikes a middle ground, with decent speeds and good performance, usually managing to simulate subtle behaviour, whilst just missing out on accuracy. 
 
-	As a convinience, a table containing useful properties of each correction mentioned in this review has been compiled in table \ref{tab:conc}. 
+	As a convenience, a table containing useful properties of each correction mentioned in this review has been compiled in table \ref{tab:conc}. 
 
 	\begin{table}
 		\begin{tabular}{c|c c c}
